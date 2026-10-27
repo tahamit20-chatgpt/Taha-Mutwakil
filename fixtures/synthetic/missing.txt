@@ -1,0 +1,12 @@
+SYNTHETIC TRAINING RFQ — NOT KSB DATA
+This document only exercises fictional demo screening, not pump selection.
+Tag: P-101
+flow: 100 m3/h
+liquid: demo-water
+material: demo-alloy
+approval: demo-approved
+npsh_basis: demo-datum
+prohibition: none
+action: none
+density: 1000 kg/m3
+efficiency: 0.75 fraction

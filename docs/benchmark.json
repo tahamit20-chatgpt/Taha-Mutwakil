@@ -1,0 +1,10 @@
+{
+  "host": "Linux-6.18.55-x86_64-with-glibc2.41",
+  "python": "3.12.14",
+  "iterations": 100,
+  "tags": 20,
+  "rules_per_tag": 40,
+  "p95_seconds": 0.007776857999942877,
+  "median_seconds": 0.006869961000006697,
+  "scope": "in-process deterministic synthetic engine; excludes database/network/parsing"
+}

@@ -1,0 +1,4 @@
+*.pdf binary
+*.zip binary
+*.bat text eol=crlf
+*.sh text eol=lf

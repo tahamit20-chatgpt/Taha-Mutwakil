@@ -1,0 +1,29 @@
+# Local synthetic demonstration: no external deployment.
+FROM node:24-bookworm-slim AS ui
+WORKDIR /build/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN --mount=type=secret,id=build_ca if [ -f /run/secrets/build_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/build_ca; fi; npm ci
+COPY frontend/ ./
+RUN npm run build
+
+FROM node:24-bookworm-slim AS storage
+WORKDIR /storage
+COPY infra/package.json infra/package-lock.json ./
+RUN --mount=type=secret,id=build_ca if [ -f /run/secrets/build_ca ]; then export NODE_EXTRA_CA_CERTS=/run/secrets/build_ca; fi; npm ci --omit=dev && chmod -R a+rX /storage && mkdir /data && chown node:node /data
+USER node
+CMD ["node", "node_modules/s3rver/bin/s3rver.js", "-d", "/data", "-a", "0.0.0.0", "-p", "59000", "--silent", "--no-vhost-buckets"]
+
+FROM python:3.12-slim-bookworm AS app
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PYTHONPATH=/app/backend
+WORKDIR /app
+COPY backend/requirements.lock /app/backend/requirements.lock
+RUN --mount=type=secret,id=build_ca if [ -f /run/secrets/build_ca ]; then export PIP_CERT=/run/secrets/build_ca; fi; pip install --no-cache-dir -r backend/requirements.lock
+COPY backend/ /app/backend/
+COPY migrations/ /app/migrations/
+COPY alembic.ini /app/alembic.ini
+COPY fixtures/ /app/fixtures/
+COPY --from=ui /build/frontend/dist/ /app/frontend/dist/
+COPY infra/seed_demo.py infra/container_tests.py /app/infra/
+RUN chmod -R a+rX /app && groupadd --gid 10001 bidfit && useradd --uid 10001 --gid 10001 --no-create-home bidfit && mkdir /app/.runtime && chown bidfit:bidfit /app/.runtime
+USER bidfit
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

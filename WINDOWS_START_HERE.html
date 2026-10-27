@@ -1,0 +1,171 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>BidFit — Windows start guide</title><style>body{max-width:920px;margin:40px auto;padding:0 24px;background:#f5f8fa;color:#18323d;font:16px/1.7 system-ui}h1{color:#126477}pre{font:14px/1.7 ui-monospace,monospace;white-space:pre-wrap;background:white;border:1px solid #d3e1e7;border-radius:9px;padding:24px}a{color:#126477}</style></head><body><h1>BidFit — start on Windows</h1><p>This is the instruction guide. Start the application using <strong>START_BIDFIT_WINDOWS.bat</strong> after installing Docker Desktop.</p><pre>BIDFIT: WINDOWS AND CHROME START GUIDE
+====================================
+This app runs on YOUR computer. There is no publicly hosted website.
+No Python, Node.js, Git or paid AI key needs to be installed.
+
+BEFORE YOU START
+---------------
+Use an up-to-date, supported 64-bit Windows 11 computer with at least
+8 GB of memory, enough free disk space for Docker and its downloaded
+files, and a working internet connection. Windows 10 and ARM-based
+Windows users should check Docker&#x27;s current support requirements first.
+Docker Desktop needs Windows&#x27; WSL 2 feature (a small Linux environment)
+and hardware virtualization. Its installer guides you through these;
+you may need Windows administrator access, a restart, or help from IT.
+
+Official requirements and installer links:
+- Docker Desktop for Windows:
+  <a href="https://docs.docker.com/desktop/setup/install/windows-install/">https://docs.docker.com/desktop/setup/install/windows-install/</a>
+- Microsoft WSL installation and update instructions:
+  <a href="https://learn.microsoft.com/en-us/windows/wsl/install">https://learn.microsoft.com/en-us/windows/wsl/install</a>
+- Google Chrome, if you do not already have it:
+  <a href="https://www.google.com/chrome/">https://www.google.com/chrome/</a>
+
+Docker Desktop licensing depends on how it is used. Personal use and
+qualifying small businesses may use it free. Work at a larger company
+may require an existing company license. Do not buy anything for this
+demo: check your company&#x27;s approved Docker setup with IT if necessary.
+The launcher does not buy services or enable a paid AI account.
+
+NUMBERED SETUP
+--------------
+1. DOWNLOAD
+   Use the GitHub Windows ZIP link provided in the chat. If GitHub asks
+   you to sign in, use the GitHub account that owns or can access your
+   Taha-Mutwakil repository. You do not need the Git command-line tool.
+
+2. EXTRACT THE WHOLE ZIP
+   Find the ZIP in Downloads. Right-click it, choose Extract All, and
+   click Extract. Open the extracted folder called BidFit-MVP.
+   You should see START_BIDFIT_WINDOWS.bat and this text file together.
+   Do not run a file while you are still looking inside the ZIP.
+   You can keep this folder in Documents or Downloads.
+
+3. INSTALL AND START DOCKER DESKTOP
+   Open the official Docker link above. Download the Windows installer
+   matching your computer (normally x86_64 / AMD64 for Intel or AMD).
+   Run it, keep the WSL 2 option if offered, and follow its instructions.
+   Restart Windows if requested. Open Docker Desktop from the Start menu
+   and wait until it says its engine is running.
+   If it requests WSL installation/update, follow the Microsoft link.
+   A typical Microsoft command, in an Administrator Terminal, is:
+       wsl --install
+   If WSL is already installed but needs updating, Microsoft documents:
+       wsl --update
+   These commands are only necessary when Windows/Docker requests them.
+   Do not change a work computer&#x27;s security settings without IT approval.
+
+4. INSTALL OR OPEN CHROME
+   Use Chrome normally if it is already installed. Otherwise install it
+   from the official Google link above.
+
+5. START BIDFIT
+   In the EXTRACTED BidFit-MVP folder, double-click:
+       START_BIDFIT_WINDOWS.bat
+   A black window opens. Leave it open while it checks Docker, downloads
+   the app&#x27;s required files, starts the database, and prepares the example.
+   The first run can take several minutes; later runs reuse the files.
+   Internet access is needed for these first-run downloads. The ZIP is
+   not an offline installer. You do not need to enter any API key.
+   The launcher creates a local .env settings file from .env.example.
+   It keeps the paid AI connection switched OFF.
+
+6. OPEN THE LOCAL APP IN CHROME
+   When the black window says READY, it opens Chrome automatically.
+   With unchanged settings, the correct address on YOUR computer is:
+       http://localhost:8000
+   The launcher may print http://127.0.0.1:8000 instead; that is the same
+   local app. This address works only AFTER you start it on your computer.
+   It is NOT an address inside the ChatGPT cloud workspace.
+   If Chrome did not open, open Chrome and paste the address above.
+   If you changed the port setting, use the address printed by the launcher.
+
+7. LOG IN TO THE SYNTHETIC DEMO
+   Click: Enter local demo as Alice (engineer)
+   There is no username/password form or password to obtain for this mode.
+   Alice is a demonstration identity, not your company account.
+
+SHORT WALKTHROUGH
+-----------------
+8. OPEN THE EXAMPLE RFQ
+   Click Example - reviewed synthetic cooling-water RFQ in the left menu.
+   Its actual name uses a long dash rather than a hyphen.
+   This is a fictional request for a quotation (RFQ), not a customer file.
+   The pump tag is P-101. The example is regenerated from the included
+   synthetic PDF when the launcher first starts the app.
+
+9. REVIEW FACTS AND THEIR SOURCES
+   Click Evidence review. Source text appears beside the extracted facts.
+   Look at head: 50 m and its source on physical PDF page 2.
+   The ready-made example is already reviewed. To practice a correction,
+   change the head to 55, give a reason such as Synthetic correction test,
+   and click Accept / correct on that fact. The original source is kept.
+   To practice a new upload instead, create a new project with tag P-101,
+   upload fixtures\synthetic\go.txt, and accept each proposed fact after
+   checking its quoted source.
+
+10. RUN THE TECHNICAL EVALUATION
+    Click Technical evaluation, then Run technical evaluation.
+    The complete example produces a fictional demo GO. Missing or
+    conflicting information can produce INSUFFICIENT DATA instead.
+    If you edited a fact, older results are historical; run a new result.
+    The other included synthetic TXT files demonstrate CONDITIONAL GO,
+    NO-GO, missing information and conflicting requirements.
+
+11. EXPORT A REPORT
+    In Technical evaluation, choose Export HTML, Export JSON or Export CSV.
+    Chrome saves the file in Downloads (or asks you where to save it).
+    HTML is the easiest report to read: open the downloaded .html file
+    in Chrome. Use Ctrl+P and Save as PDF if you want a PDF copy.
+    JSON is a structured data file; CSV opens in a spreadsheet program.
+    Reports keep the facts and decision from that evaluation run, even
+    if you later change the project.
+
+12. STOP AND RESTART
+    Double-click STOP_BIDFIT_WINDOWS.bat when finished.
+    Your local projects and documents are kept in Docker&#x27;s storage.
+    To return later, open Docker Desktop and double-click
+    START_BIDFIT_WINDOWS.bat again. Do not delete Docker volumes if you
+    want to keep your work.
+
+IF SOMETHING GOES WRONG
+-----------------------
+- Docker not found / not running: install/open Docker Desktop first.
+- Linux containers required: use Docker Desktop&#x27;s Switch to Linux
+  containers option. You do not need Windows containers for this app.
+- WSL/virtualization error: follow Docker&#x27;s message and the Microsoft
+  instructions; ask IT if the computer is managed by your company.
+- Windows blocks downloaded scripts: do not weaken your company policy.
+  Ask IT to review the package. Explicit Docker commands are documented
+  in docs\LOCAL_START.md if your policy allows using Windows Terminal.
+- Page cannot be reached: check that the launcher finished without an
+  ERROR message and that Docker Desktop remains running. Opening a
+  localhost address BEFORE starting the app will not work.
+- Port 8000 already in use: open .env in Notepad. Change
+  BIDFIT_PORT=8000 to BIDFIT_PORT=8001, save, and run the launcher again.
+  Then use http://localhost:8001 or the printed address.
+- Missing project files: use Extract All on the whole ZIP, not one file.
+- File download/build failure: keep the error text and check internet
+  access. Some company networks require IT&#x27;s proxy/certificate setup.
+  Do not turn off certificate verification to force an installation.
+- Need help: send the error message from the black window. Do not send
+  passwords, API keys or confidential documents.
+
+WHAT WAS AND WAS NOT TESTED
+--------------------------
+The app&#x27;s Docker build, separate processing worker, local database,
+synthetic example, browser workflow and exports were tested on Linux.
+21 backend tests and 2 Chrome-engine browser tests passed in the earlier
+packaged application verification. ZIP contents and checksums are checked.
+There is no Windows machine in this workspace: the Windows .bat launcher,
+Windows installation, WSL setup, and opening your installed Chrome have
+NOT been executed on Windows. Current package checks are recorded in
+WINDOWS_VERIFICATION.txt.
+
+DEMONSTRATION ONLY
+------------------
+Pattern extraction is NOT real AI extraction. Screening rules, approvals,
+materials and example outcomes are fictional. They are not KSB capability
+claims or validated engineering conclusions. Hydraulic selection remains
+unverified. Use only synthetic files. Do not upload confidential RFQs.
+</pre></body></html>

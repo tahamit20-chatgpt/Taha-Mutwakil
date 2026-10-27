@@ -1,0 +1,36 @@
+WINDOWS PACKAGE VERIFICATION - 27 OCTOBER 2026
+===========================================
+
+WHAT THIS WORKSPACE CAN VERIFY
+- Fresh backend run: 21 tests PASSED (13.79 seconds).
+- Frontend type check and build: PASSED.
+- Fresh Chrome-engine browser workflow run: 2 tests PASSED (9.0 seconds).
+  The tests create an RFQ, upload a synthetic document, review/correct
+  facts, evaluate, and download/check a report. Missing data abstains.
+- The local Docker application images and separate database/document
+  storage/worker setup were built, started, and tested on Linux during
+  the previous package validation. The synthetic example persisted
+  across restart. See docs/PACKAGE_VALIDATION.md.
+- Windows startup script checked statically: all 12 error/control-flow
+  labels exist, with Docker/readiness/settings/Chrome/error checks.
+- ZIP CRC and SHA-256 manifest verification are performed by the packager.
+- Local session state, actual .env files, secrets, uploaded documents,
+  database contents and developer dependency folders are excluded.
+- All real-model egress remains OFF in the bundled local Docker profile.
+
+WHAT HAS NOT BEEN TESTED
+This is a Linux x86-64 workspace, not Windows. It has no cmd.exe,
+Windows PowerShell, Windows Docker Desktop, WSL setup, or Windows Chrome.
+The .bat files, the Docker Desktop installation, Windows permissions,
+Chrome discovery/opening and your computer's networking have NOT been
+executed on Windows. Static inspection is not a Windows execution test.
+No native ARM-based Windows run has been tested.
+
+No real LLM call, managed OIDC login, private production S3 integration,
+confidential KSB RFQ, certified engineering evaluation, or public app
+hosting was used. Existing production gaps remain documented.
+
+The official installation links are provided in WINDOWS-START-HERE.txt.
+This workspace could not retrieve those pages for a live requirements
+check; use the vendors' pages to confirm their current support details.
+No subscription, license or hosting service was purchased.

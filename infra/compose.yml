@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:17.5-alpine
+    environment:
+      POSTGRES_USER: bidfit
+      POSTGRES_PASSWORD: local-synthetic-only
+      POSTGRES_DB: bidfit
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: ["db:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bidfit"]
+      interval: 2s
+      retries: 30
+volumes:
+  db:
