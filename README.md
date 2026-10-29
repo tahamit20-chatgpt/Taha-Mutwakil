@@ -1,10 +1,16 @@
-# BidFit — Phase 1 synthetic prototype
+# BidFit 2.0 — incremental RFQ workflow upgrade
 
 **Windows beginner? Open WINDOWS-START-HERE.txt or WINDOWS_START_HERE.html first.**
 
 A working RFQ → cited requirements → engineer review → deterministic technical screening → frozen report workflow. **Demonstration only: no genuine AI extraction in demo mode, no validated engineering conclusions, no KSB product data.**
 
-Repository: `tahamit20-chatgpt/Taha-Mutwakil`; implementation branch `bidfit/phase1`. The checkout was empty (no commits or files) when work began. The three supplied specifications are preserved under `docs/specifications/`.
+Repository: `tahamit20-chatgpt/Taha-Mutwakil`; implementation branch `bidfit/2.0` (original Windows demo preserved on `bidfit/windows-demo`). The checkout was empty (no commits or files) when work began. The three supplied specifications are preserved under `docs/specifications/`.
+
+## BidFit 2.0
+
+Classification (four product categories/six markets) → multi-format documents → cited facts and editable RFQ summary → explicit summary acknowledgement → suggested/explicit/approved standards layers → deterministic compliance matrix and preliminary decision. Selection, manual pricing references and draft quotation foundations reuse the same RFQ context. Legacy RFQs and the original technical workflow are preserved.
+
+See `docs/SYSTEM_ARCHITECTURE.md`, `docs/DATA_MODEL.md`, `docs/ENGINEERING_RULES.md`, `docs/STANDARDS_REGISTRY.md`, `docs/FUTURE_SELECTION_ENGINE.md` and `docs/TEST_EVIDENCE.md`. **No real KSB engineering compliance, hydraulic selection or approved prices are claimed.** Original logo PNG bytes were not exposed in the workspace; Settings supports uploading the authoritative file unchanged.
 
 ## Browser access from a downloaded ZIP
 
@@ -26,7 +32,9 @@ The prepared instance already includes **Example — reviewed synthetic cooling-
 
 No credentials are needed for the local synthetic workflow. All bundled database/storage credentials are development-only and must never be exposed publicly. The private S3 emulator is **not** a production storage service.
 
-## Five-minute walkthrough
+## Original demonstration walkthrough
+
+For the new 2.0 workflow, read `BIDFIT_2_0_WINDOWS.txt`. The original quick-demo flow below remains accessible through New RFQ → Original quick demo.
 
 1. Enter the local demo as Alice (engineer). Create a project with tag `P-101`.
 2. Download `go.txt` from the new-project fixture links (or use `fixtures/synthetic/go.txt`). Upload it under Documents. The worker parses it asynchronously.

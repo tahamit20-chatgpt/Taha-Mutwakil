@@ -1,3 +1,12 @@
+BIDFIT 2.0 UPDATE — 29 OCTOBER 2026
+==================================
+Current rebuild: 40 backend tests and 5 browser journeys passed against
+the Linux Docker stack. TypeScript/build passed. See docs/TEST_EVIDENCE.md.
+Windows launcher scripts and WSL/Chrome desktop installation have NOT
+been executed on Windows. Read BIDFIT_2_0_WINDOWS.txt for the upgrade.
+
+The original verification record is retained below:
+
 WINDOWS PACKAGE VERIFICATION - 27 OCTOBER 2026
 ===========================================
 

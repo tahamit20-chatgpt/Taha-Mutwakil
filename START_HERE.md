@@ -1,3 +1,7 @@
+# BidFit 2.0 upgrade
+
+Windows users: read **BIDFIT_2_0_WINDOWS.txt** for the new workflow and preserving existing records. Use the same Docker project name; never delete volumes to upgrade. Original RFQs remain accessible.
+
 # Windows users: start here
 
 Read **WINDOWS-START-HERE.txt** or open **WINDOWS_START_HERE.html** in Chrome. Install/open Docker Desktop, then double-click **START_BIDFIT_WINDOWS.bat**. No Python, Node.js or Git installation is required. Use **STOP_BIDFIT_WINDOWS.bat** to stop while keeping local data. This package is synthetic-only and requires first-run internet downloads.

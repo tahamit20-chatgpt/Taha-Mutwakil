@@ -16,7 +16,7 @@ docker compose --env-file .env -f compose.local.yml up --build -d --wait --wait-
 docker compose --env-file .env -f compose.local.yml exec -T api python infra/seed_demo.py
 address="$(docker compose --env-file .env -f compose.local.yml port api 8000)"
 echo "BidFit is ready on your computer: http://${address}"
-echo "Use Alice's local demo login. Open the Example project or create a new one."
+echo "Use Alice's local demo login. Open a BidFit 2.0 synthetic example or create a new one."
 echo "Stop later with: docker compose --env-file .env -f compose.local.yml down"
 if command -v open >/dev/null 2>&1; then
   open "http://${address}"

@@ -36,7 +36,7 @@ def custom_rule(c,**extra):
 def test_classification_config_six_areas_and_mixed_validation(client):
     m=client.get('/api/v1/configuration').json()
     assert list(m['markets'])==['Water','Energy','Mining','General Industry','Building Services','Petrochemicals / Chemicals']
-    p=create(client);d=load(client,p);assert d['classification']['application']=='Water Supply' and d['workflow_version']=='2.0' and d['name'].endswith(' revised')
+    p=create(client);d=load(client,p);assert d['classification']['application']=='Water Supply' and d['workflow_version']=='2.0' and d['name']=='BidFit 2.0 synthetic RFQ'
     assert client.post('/api/v1/rfqs',json=dict(name='Invalid',classification=dict(product_category='Valve',market_area='Water',application='Fire Protection',customer='Synthetic'),equipment=[dict(tag='V1',product_category='Valve')])).status_code==422
     assert client.post('/api/v1/rfqs',json=dict(name='Wrong category',classification=dict(product_category='Valve',market_area='Water',application='Water Supply',customer='Synthetic'),equipment=[dict(tag='P1',product_category='Pump / Pump Set')])).status_code==422
     login(client,'bob');assert client.put('/api/v1/configuration',json=dict(expected_version=m['lock_version'],customers=m['customers'],markets=m['markets'])).status_code==403
@@ -63,6 +63,7 @@ def test_missing_npsha_and_unavailable_standard_never_pass(client):
     rows=r['compliance_matrix'];assert any(x['field']=='npsha' and x['compliance_status']=='MISSING INFORMATION' for x in rows)
     assert any(x.get('standard_reference')=='API 610' and x['result']=='UNKNOWN' for x in rows)
     assert st['explicit'][0]['source']['line_start']
+    assert next(x for x in rows if x.get('standard_reference')=='API 610')['severity'] is None
 
 def test_standard_suggestions_do_not_become_mandatory_and_editions_conflict(client):
     p=create(client);ready(client,p);acknowledge(client,p)
@@ -177,3 +178,18 @@ def test_register_quantity_conflict_and_price_gates(client):
     payload['price_kind']='Target Selling Price'
     r=client.post(f'/api/v1/projects/{p}/pricing/references',json=payload)
     assert r.status_code==201 and r.json()['approval_status']=='DRAFT_UNAPPROVED'
+
+@pytest.mark.parametrize('fixture,outcome',[('go','GO'),('conditional','CONDITIONAL GO'),('no-go','NO-GO'),('missing','INSUFFICIENT DATA')])
+def test_v2_four_frozen_decisions(client,fixture,outcome):
+    p=create(client);ready(client,p,(ROOT/'fixtures/synthetic'/f'{fixture}.txt').read_text()+'npsha: 6 m\n');acknowledge(client,p)
+    s=process(client,p)['snapshot'];assert s['outcome']==outcome
+    assert all(f['rule_hash'] for f in s['compliance_matrix'] if f.get('rule_id'))
+    if outcome=='CONDITIONAL GO':assert any(f['compliance_status']=='DEVIATION' for f in s['compliance_matrix'])
+
+def test_approved_synthetic_product_prohibition_requires_exact_confirmed_value(client):
+    p=create(client);ready(client,p,(ROOT/'fixtures/synthetic/v2-pump.txt').read_text()+'pump_type: prohibited-demo-type\n')
+    rule=dict(criterion_id='TYPE_BOUNDARY',name='Synthetic project type prohibition',field='pump_type',product_category='Pump / Pump Set',operator='enum_in',allowed_values=['permitted-demo-type'],severity='HARD STOP',scope='project',project_prohibition=True,confirmed_prohibition_value='prohibited-demo-type',source_reference='Synthetic project-wide prohibition fixture; not KSB portfolio',effective_date='2020-01-01')
+    draft=client.post('/api/v1/registry/rules',json=rule);assert draft.status_code==201,draft.text
+    acknowledge(client,p);assert process(client,p)['snapshot']['outcome']=='INSUFFICIENT DATA'
+    approval=client.post('/api/v1/registry/rules/'+draft.json()['id']+'/approve',json={'reason':'Synthetic fixture approval only'});assert approval.status_code==200
+    assert process(client,p)['snapshot']['outcome']=='NO-GO'

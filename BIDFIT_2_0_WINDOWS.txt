@@ -1,0 +1,67 @@
+BIDFIT 2.0 - WINDOWS UPGRADE AND WALKTHROUGH
+==========================================
+Read WINDOWS-START-HERE.txt for installing Docker Desktop/WSL and Chrome.
+No host Python, Node.js, Git or paid AI API key is needed.
+
+UPGRADE WITHOUT LOSING YOUR LOCAL RFQS
+1. Extract the new ZIP into a new ordinary folder.
+2. Keep Docker Desktop running. Stop the old app with its stop button.
+3. Use the same COMPOSE_PROJECT_NAME=bidfit-local setting in .env.
+   This reuses your existing Docker database/document volumes. If you
+   used a custom name previously, use that same name in the new folder.
+   Do not delete Docker volumes and do not add --volumes to stop commands.
+4. Double-click START_BIDFIT_WINDOWS.bat in the NEW extracted folder.
+   It rebuilds the application, preserves the stored records and adds
+   the new synthetic examples if they do not already exist.
+5. Chrome opens the address on YOUR computer after readiness passes.
+   Native Windows execution still has not been tested in this workspace.
+
+EXAMPLES
+- BidFit 2.0 - synthetic pump screening: complete fictional screening.
+- BidFit 2.0 - standards review required: an explicit API 610 reference
+  whose approved full-standard evidence is unavailable. Expect
+  INSUFFICIENT DATA, not an invented compliance result.
+The actual example names use a long dash. Your original Example RFQ
+and any previously saved RFQs remain accessible in RFQ History.
+
+CREATE AND PROCESS YOUR OWN SYNTHETIC RFQ
+1. Log in using the explicit Alice demo button.
+2. Select New RFQ. Choose Pump / Pump Set, Valve, Spare Parts, or Mixed.
+3. Choose one of the six market areas and its application.
+4. Enter a synthetic customer, project name, reference and tag register.
+   For v2-pump.txt or v2-standards.xlsx use tag P-101 and quantity 2.
+   For v2-mixed.txt use P-101 (pump), V-101 (valve), S-101 (spare parts).
+5. Create the workspace and upload fixtures/synthetic/v2-pump.txt,
+   v2-standards.docx, v2-standards.xlsx or v2-package.zip.
+   Additional uploads stay in this RFQ. Use Revision of for a new version.
+6. Open RFQ summary. Read source text, missing inputs and conflicts.
+   Accept, correct, or reject every proposed fact with a reason.
+   Save summary notes if desired. Enter a summary-review reason and
+   choose Acknowledge reviewed summary. Missing information stays visible.
+7. Open Standards. Suggestions are not mandatory; explicit references
+   retain source/edition. Engineers can record applicability with evidence.
+8. Click PROCESS RFQ. Expand each compliance finding for requirement,
+   source, rule/version/hash, limit, capability evidence and clarification.
+   Export HTML, JSON or CSV from that frozen evaluation.
+9. Commercial remains separate. Selection Studio lets engineers reference
+   sourced product families/candidates, but does not validate curves.
+   Pricing stores draft sourced references only. Quotation Studio creates
+   a marked draft with missing prices/configurations explicit.
+
+EXACT ORIGINAL LOGO
+The inline chat images were not exposed as downloadable byte files in
+this workspace, so no substitute/recreated logo is bundled. Select
+Settings and upload the ORIGINAL KSB PNG from your Windows computer.
+The file is stored unchanged, with a hash, and displayed proportionately
+on login/navigation. Blue/grey theme colors are provisional design tokens,
+not claimed official brand specifications. Do not upload confidential
+RFQ files as branding assets.
+
+IMPORTANT LIMITS
+- All datasets/rules are synthetic demonstrations; extraction is pattern
+  matching, not actual AI understanding in this default mode.
+- Standards identifiers are not licensed clauses or proof of compliance.
+- No actual KSB curves, product boundaries, prices, approval records or
+  customer data have been invented. Real engineering integrations await
+  authorized data, configuration and validation.
+- No public application hosting or purchase is performed by these scripts.

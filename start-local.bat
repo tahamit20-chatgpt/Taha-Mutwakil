@@ -50,7 +50,7 @@ echo.
 echo [5/5] Ready - opening Chrome...
 echo YOUR COMPUTER'S address: %BIDFIT_URL%
 echo Choose: Enter local demo as Alice (engineer).
-echo Open: Example - reviewed synthetic cooling-water RFQ.
+echo Open: BidFit 2.0 - standards review required.
 echo.
 set "BIDFIT_CHROME="
 if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" set "BIDFIT_CHROME=%ProgramFiles%\Google\Chrome\Application\chrome.exe"

@@ -1,3 +1,5 @@
+> Historical Phase 1 baseline. For the current 2.0 upgrade see SYSTEM_ARCHITECTURE.md and TEST_EVIDENCE.md.
+
 # Downloadable local package validation
 
 The ChatGPT workspace has no supported preview URL, port-forwarding tool or externally addressable application URL. No external preview was created or claimed. A remote loopback response is not evidence of access from your browser. The ZIP is the supported fallback deliverable and runs the application on your own computer.

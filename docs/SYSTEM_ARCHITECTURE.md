@@ -19,3 +19,7 @@ Existing opaque HttpOnly/SameSite cookie sessions and CSRF checks remain. Demo A
 ## Branding
 
 All visual tokens are centralized in `frontend/src/style.css`. Blue/grey values are **provisional**, not claimed official brand codes. The three inline images are visible to the assistant but their original byte files were not exposed in the workspace. They were not regenerated, traced, substituted from the internet or distorted. Settings accepts an original PNG unchanged (hash recorded); login and navigation use it with preserved aspect ratio. A supplied `frontend/public/branding/ksb-logo.png` can also be bundled later. Until that file is supplied/configured, the interface explicitly says the original logo is pending. Champion 28 and the second mark were not invented or copied into new artwork.
+
+## Parsing limits
+
+General ZIP: at most 100 archive entries and 20 total project files including the container; 25 MiB per original/child, 50 MiB expanded total, maximum 200:1 per-entry expansion. No nested archives, unsafe/duplicate paths, links or encryption. Office packages: at most 1,000 parts, 50 worksheets and 50,000 cells, within the same byte limits. XML entities are disabled. Relevant unsupported drawings, formulas, scans and attachments remain explicit gaps rather than being silently ignored.

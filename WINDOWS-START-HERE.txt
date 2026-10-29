@@ -1,3 +1,7 @@
+BIDFIT 2.0: Read BIDFIT_2_0_WINDOWS.txt for the upgraded workflow and
+for keeping your existing RFQs when upgrading. The instructions below
+still apply to installing and starting the local application.
+
 BIDFIT: WINDOWS AND CHROME START GUIDE
 ====================================
 This app runs on YOUR computer. There is no publicly hosted website.
@@ -88,7 +92,7 @@ NUMBERED SETUP
 SHORT WALKTHROUGH
 -----------------
 8. OPEN THE EXAMPLE RFQ
-   Click Example - reviewed synthetic cooling-water RFQ in the left menu.
+   Select RFQ History, then click Example - reviewed synthetic cooling-water RFQ.
    Its actual name uses a long dash rather than a hyphen.
    This is a fictional request for a quotation (RFQ), not a customer file.
    The pump tag is P-101. The example is regenerated from the included

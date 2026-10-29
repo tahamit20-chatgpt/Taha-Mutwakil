@@ -1,3 +1,5 @@
+> Historical Phase 1 baseline. For the current 2.0 upgrade see SYSTEM_ARCHITECTURE.md and TEST_EVIDENCE.md.
+
 # Validation evidence
 
 Executed in the onboarding Linux x86-64 workspace, Python 3.12.14 / Node 24.19.0 / PostgreSQL 17.5 / system Chromium 154. No paid LLM calls, real RFQs, public deployment or repository push.

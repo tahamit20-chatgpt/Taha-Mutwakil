@@ -6,7 +6,7 @@ OUT=Path(sys.argv[1]) if len(sys.argv)>1 else ROOT.parent/'artifacts/BidFit-MVP.
 OUT.parent.mkdir(parents=True,exist_ok=True)
 exclude={'.git','.runtime','.venv','.pytest_cache','__pycache__','node_modules','test-results','playwright-report','artifacts','downloads'}
 allowed_roots={'backend','frontend','infra','docs','fixtures','migrations','.github'}
-allowed_files={'.gitattributes','README.md','START_HERE.md','alembic.ini','.gitignore','.dockerignore','.env.example','compose.local.yml','start-local.sh','start-local.bat','START_BIDFIT_WINDOWS.bat','STOP_BIDFIT_WINDOWS.bat','WINDOWS-START-HERE.txt','WINDOWS_START_HERE.html','WINDOWS_VERIFICATION.txt'}
+allowed_files={'.gitattributes','README.md','START_HERE.md','BIDFIT_2_0_WINDOWS.txt','alembic.ini','.gitignore','.dockerignore','.env.example','compose.local.yml','start-local.sh','start-local.bat','START_BIDFIT_WINDOWS.bat','STOP_BIDFIT_WINDOWS.bat','WINDOWS-START-HERE.txt','WINDOWS_START_HERE.html','WINDOWS_VERIFICATION.txt'}
 files=[]
 for path in sorted(ROOT.rglob('*')):
     rel=path.relative_to(ROOT)

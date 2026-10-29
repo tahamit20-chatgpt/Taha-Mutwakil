@@ -1,3 +1,5 @@
+> Historical Phase 1 baseline. For the current 2.0 upgrade see SYSTEM_ARCHITECTURE.md and TEST_EVIDENCE.md.
+
 # Architecture and delivery boundaries
 
 Implemented: React/TypeScript/Vite, same-origin FastAPI, Pydantic request/extraction schemas, SQLAlchemy + Alembic on PostgreSQL 17, private S3-compatible object adapter, separate same-codebase worker with SQL durable queue, leased `SKIP LOCKED` claims, retries and atomic fact/page/job commits. Disk-backed S3rver is the loopback synthetic emulator because MinIO images were unavailable. Its default dev credentials and network binding are not production access controls.
