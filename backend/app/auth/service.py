@@ -5,7 +5,7 @@ from sqlalchemy import select
 from app.db import Record, add, Session
 from app.config import DEMO
 DEMO_USERS={
- 'alice':dict(user='alice',tenant='demo-tenant-a',role='Engineer',permissions=['configuration','engineering_approval']),
+ 'alice':dict(user='alice',tenant='demo-tenant-a',role='Engineer',permissions=['configuration','engineering_approval','approval_verification']),
  'bob':dict(user='bob',tenant='demo-tenant-a',role='Engineer'),
  'viewer':dict(user='viewer',tenant='demo-tenant-a',role='Viewer'),
  'outsider':dict(user='outsider',tenant='demo-tenant-b',role='Engineer')}

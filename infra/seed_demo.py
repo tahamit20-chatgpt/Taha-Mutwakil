@@ -33,4 +33,15 @@ with httpx.Client(base_url='http://127.0.0.1:8000',timeout=30) as c:
         checked(c.post(f"/api/v1/projects/{p['id']}/summary/reviews",json=dict(expected_version=p['lock_version'],summary_hash=s['summary_hash'],reason='Seeded example reviewed for demonstration only; actual engineer must verify all gaps')))
         run=checked(c.post(f"/api/v1/projects/{p['id']}/process-rfq",json={'expected_version':p['lock_version']}))
         print('Created '+name+': '+run['snapshot']['outcome']+' (fictional preliminary screening only)')
+    registry=checked(c.get('/api/v1/approvals/registry'))
+    for name,filename,series in [('Aramco demo — RPH historical 9COM review','aramco-rph.txt','RPH'),('Aramco demo — Omega API 610 deviation review','aramco-omega.txt','Omega')]:
+        if name in existing:print('Preserved existing example: '+name);continue
+        p=checked(c.post('/api/v1/rfqs',json=dict(name=name,classification=dict(product_category='Pump / Pump Set',market_area='Water',application='Water Supply',customer='Saudi Aramco',rfq_reference='SYNTHETIC-ARAMCO-ONLY',assigned_engineer='Demo Alice'),equipment=[dict(tag='P-101',product_category='Pump / Pump Set',quantity=2)])))
+        p=fill(c,p['id'],filename)
+        product=next(x for x in registry['products'] if x['name']==series)
+        checked(c.put(f"/api/v1/projects/{p['id']}/approvals/assignment",json=dict(expected_version=p['lock_version'],tag='P-101',product_series_id=product['id'],proposed_vendor_code='10066368',proposed_plant_id='30008606',component_approval='NOT_APPLICABLE',component_evidence='Fictional fixture scope excludes component suppliers; real scope requires review',reason='Seeded candidate reference only, not a pump selection or customer approval')))
+        p=checked(c.get('/api/v1/projects/'+p['id']));s=checked(c.get(f"/api/v1/projects/{p['id']}/summary"))
+        checked(c.post(f"/api/v1/projects/{p['id']}/summary/reviews",json=dict(expected_version=p['lock_version'],summary_hash=s['summary_hash'],reason='Synthetic approval example reviewed, including pending original source attachments and current verification')))
+        run=checked(c.post(f"/api/v1/projects/{p['id']}/process-rfq",json={'expected_version':p['lock_version']}))
+        print('Created '+name+': '+run['snapshot']['outcome']+' — historical references do not verify current eligibility')
     print('BidFit examples are ready. No real engineering conclusion or company approval was generated.')

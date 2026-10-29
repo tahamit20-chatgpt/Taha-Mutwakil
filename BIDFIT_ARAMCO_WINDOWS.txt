@@ -1,0 +1,84 @@
+BIDFIT 2.0 - ARAMCO APPROVAL REGISTRY UPGRADE
+==========================================
+This package runs on your Windows computer. It does not publish a website.
+Only fictional RFQs are included. The approval reference values were supplied
+by you as structured text; the actual approval PDF and product presentation
+are not included, imported or verified.
+
+START OR UPGRADE
+1. Download the ZIP and right-click it > Extract All. Open the extracted
+   BidFit-MVP folder. Do not run the app from inside the ZIP.
+2. Docker Desktop must be installed and running with Linux containers.
+   Download: https://docs.docker.com/desktop/setup/install/windows-install/
+   Chrome: https://www.google.com/chrome/
+   You do not need to install Python, Node.js or Git.
+3. If Docker says WSL is not installed, right-click the Windows Start button,
+   choose Terminal (Admin) or Windows PowerShell (Admin), then run:
+       wsl --install --no-distribution
+   Restart your computer and open Docker Desktop again. If Windows asks
+   to update WSL, use wsl --update in that administrator window.
+   Microsoft guide: https://learn.microsoft.com/windows/wsl/install
+   Docker must show that its engine is running before the app can start.
+4. If the old BidFit is running, use STOP_BIDFIT_WINDOWS.bat from its folder.
+   Keep the same COMPOSE_PROJECT_NAME in .env (default bidfit-local).
+   Do not delete Docker volumes: those hold your saved RFQs and documents.
+5. Double-click START_BIDFIT_WINDOWS.bat in the NEW folder. First start
+   needs internet access to download application dependencies. Keep the
+   window open while it prepares the app and example RFQs.
+6. Chrome should open automatically after the readiness check. With the
+   unchanged default settings, the local address on YOUR computer is:
+       http://localhost:8000
+   This address only works after you start the package on your Windows PC.
+   If you changed BIDFIT_PORT, use the address shown by the startup script.
+7. Choose "Enter local demo as Alice (engineer)". No password is required
+   for this clearly labelled local demo identity. It is not company sign-in.
+   If upgrading an existing open browser session, sign out and sign back in.
+
+TRY THE NEW EXAMPLE
+1. In the dashboard open "Aramco demo - RPH historical 9COM review".
+   The actual example name uses a long dash instead of a plain hyphen.
+2. Select RFQ summary. Read the source text and accepted facts. The
+   synthetic source is fixtures/synthetic/aramco-rph.txt, also included.
+3. Find Saudi Aramco Approval Requirements. Required code 6000002356
+   comes from reviewed RFQ text; the RPH association is a separate
+   portfolio reference. Historical vendor 10066368 and plant 30008606
+   remain distinct from proposed identifiers and current verification.
+4. Expand "Review proposed product and manufacturing reference" to
+   change the candidate, proposed identifiers or component applicability.
+   This records a reason and makes a previous evaluation stale. If you
+   change anything, acknowledge the reviewed summary again before processing.
+5. Click PROCESS RFQ. Expect INSUFFICIENT DATA: a historical listing
+   cannot verify current customer approval or engineering suitability.
+   Expand ARAMCO-001 through ARAMCO-010 for explanations and references.
+6. Click Export HTML to download an easy-to-read report, or JSON/CSV
+   for the full frozen record. Subsequent registry changes cannot rewrite it.
+7. Open the Omega example to see the explicit API 610 deviation warning.
+
+EXPLORE THE REGISTRY
+- Knowledge Library > Customer Approvals > Saudi Aramco: filter seven
+  commodity codes and inspect source metadata and current verification.
+- Search 6000002288 to see WKB, RPH-V and WKTR together.
+- Product Library > KSB Product Series: eight sourced design references.
+  Their standards are references only, not compliance certificates.
+- Alice can expand "Manage approval references & append review history"
+  to add evidence metadata, revise a commodity/product/mapping, and append
+  a review. The provided approval-test-source.txt is SYNTHETIC TEST ONLY.
+  It can exercise private storage but can never verify live customer approval.
+- The original example RFQs, history, reports and Windows start/stop scripts
+  remain available. No real customer source document should be uploaded.
+
+WHAT IS STILL NEEDED
+The actual SQU-26-24 letter and presentation were not supplied. Their
+attachments remain PENDING. Current authorized Aramco verification, approved
+scanning/source validation, component supplier evidence and configuration-
+specific engineering data still require a future authorized integration.
+No current approval, licensed standards compliance, pump performance, KSB
+operating limit or customer acceptance is claimed by this demonstration.
+
+VERIFICATION LIMIT
+The application and browser workflow are tested on Linux, including the
+Docker packaging path. Native Windows, WSL installation and automatic
+Chrome launching cannot be executed from this cloud workspace.
+
+More details: docs/ARAMCO_9COM_APPROVAL_REGISTRY.md and
+BIDFIT_2_0_WINDOWS.txt. Stop with STOP_BIDFIT_WINDOWS.bat; keep your data volumes.

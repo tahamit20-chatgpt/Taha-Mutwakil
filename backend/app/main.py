@@ -133,8 +133,9 @@ def get_project(pid:str,user=Depends(identity),db=Depends(db_session)):
     for d in records['document']: d.pop('object_key',None)
     jobs=db.scalars(select(Job).where(Job.project_id==pid,Job.tenant_id==user['tenant'])).all()
     from app.workflow.service import registry_hash
+    from app.approvals.service import registry_hash as approval_hash
     for run in records['evaluation']:
-        snap=run['snapshot'];run['is_stale']=snap['project_version']!=p.lock_version or (bool(snap.get('registry_hash')) and snap['registry_hash']!=registry_hash(db,p.tenant_id))
+        snap=run['snapshot'];run['is_stale']=snap['project_version']!=p.lock_version or (bool(snap.get('registry_hash')) and snap['registry_hash']!=registry_hash(db,p.tenant_id)) or (bool(snap.get('approval_registry_hash')) and snap['approval_registry_hash']!=approval_hash(db,p.tenant_id))
     return {**serialize(p),**records,'jobs':[dict(id=j.id,state=j.state,stage=j.stage,attempt=j.attempt,error=j.error) for j in jobs]}
 @app.post('/api/v1/projects/{pid}/documents',status_code=202)
 async def upload(pid:str,file:UploadFile=File(...),idempotency_key:str=Header(...,max_length=128),revision_of:str|None=Form(None),user=Depends(identity),db=Depends(db_session)):
@@ -253,5 +254,7 @@ def fixture(scenario:str,user=Depends(identity)):
 
 from app.workflow.routes import router as workflow_router
 app.include_router(workflow_router)
+from app.approvals.routes import router as approvals_router
+app.include_router(approvals_router)
 
 if static.exists(): app.mount('/',StaticFiles(directory=static,html=True),name='ui')

@@ -67,6 +67,8 @@ def summary(db,p):
         groups.append(dict(**item,fields=fields))
     coverage_gaps=[dict(document_id=d['id'],filename=d['filename'],gaps=d.get('gaps') or ['Document processing not complete']) for d in docs if d.get('state') not in ('NEEDS_REVIEW','READY_FOR_EVALUATION','EXPANDED') or d.get('gaps')]
     base=dict(project_name=p.data['name'],classification=p.data.get('classification'),equipment=groups,documents=docs,missing=missing,conflicts=conflicts,coverage_gaps=coverage_gaps,unreviewed_count=sum(f['status']=='PROPOSED' for f in facts),notes=p.data.get('summary_notes',''),method='DEMO_PATTERN_NOT_AI' if all(f['method']=='DEMO_PATTERN_NOT_AI' for f in facts) else 'LLM_PROPOSALS_REQUIRE_REVIEW')
+    from app.approvals.service import applicable,assessments
+    if applicable(p):base['customer_approvals']=assessments(db,p)
     base['summary_hash']=digest(base)
     reviews=rows(db,p.tenant_id,'summary_review',p.id)
     base['reviewed']=any(r.data['summary_hash']==base['summary_hash'] for r in reviews)
@@ -111,10 +113,16 @@ def standards(db,p):
             key=(item['tag'],d['code'],d.get('edition'))
             if any((r['tag'],r['code'],r['edition'])==key for r in required):continue
             suggested.append(dict(tag=item['tag'],code=d['code'],edition=d.get('edition'),standard_id=ref.id,explicit=False,reason=d.get('reason','Reference selected for review'),review=selected.get(key),availability=d['availability']))
+    from app.approvals.service import design_references
+    for ref in design_references(db,p):
+        key=(ref['tag'],ref['code'],ref['edition']);ref['review']=selected.get(key)
+        # Keep product provenance visible even when a generic suggestion exists.
+        suggested=[x for x in suggested if (x['tag'],x['code'],x['edition'])!=key]
+        suggested.append(ref)
     return dict(suggested=suggested,explicit=required,notice='Suggestions are never mandatory from market segment alone. Confirm product, application, contract edition and authority.')
 
 def finding(criterion,tag,product,status,reason,**kw):
-    return dict(criterion_id=criterion,tag=tag,product_category=product,result={'COMPLIANT':'PASS','NON-COMPLIANT':'FAIL','DEVIATION':'FAIL','NOT APPLICABLE':'NOT_APPLICABLE'}.get(status,'UNKNOWN'),compliance_status=status,reason=reason,field=kw.pop('field',None),decision_impact=kw.pop('decision_impact','NONE' if status in ('COMPLIANT','NOT APPLICABLE') else 'INSUFFICIENT DATA'),severity=kw.pop('severity',None),method='Deterministic evidence/rule comparison; synthetic namespace',fact_ids=kw.pop('fact_ids',[]),requirement_evidence=kw.pop('requirement_evidence',[]),capability_evidence=kw.pop('capability_evidence',None),rule_version=kw.pop('rule_version',None),rule_hash=kw.pop('rule_hash',None),authority=kw.pop('authority','No approved authority supplied'),clarification=None if status in ('COMPLIANT','NOT APPLICABLE') else 'Engineer: '+reason,approval_status=kw.pop('approval_status','REQUIRES ENGINEERING REVIEW'),**kw)
+    return dict(criterion_id=criterion,tag=tag,product_category=product,result={'COMPLIANT':'PASS','NON-COMPLIANT':'FAIL','DEVIATION':'FAIL','NOT APPLICABLE':'NOT_APPLICABLE'}.get(status,'UNKNOWN'),compliance_status=status,reason=reason,field=kw.pop('field',None),decision_impact=kw.pop('decision_impact','NONE' if status in ('COMPLIANT','NOT APPLICABLE') else 'INSUFFICIENT DATA'),severity=kw.pop('severity',None),method=kw.pop('method','Deterministic evidence/rule comparison; synthetic namespace'),fact_ids=kw.pop('fact_ids',[]),requirement_evidence=kw.pop('requirement_evidence',[]),capability_evidence=kw.pop('capability_evidence',None),rule_version=kw.pop('rule_version',None),rule_hash=kw.pop('rule_hash',None),authority=kw.pop('authority','No approved authority supplied'),clarification=None if status in ('COMPLIANT','NOT APPLICABLE') else 'Engineer: '+reason,approval_status=kw.pop('approval_status','REQUIRES ENGINEERING REVIEW'),**kw)
 
 def compliance(db,p):
     from fastapi import HTTPException
@@ -175,6 +183,9 @@ def compliance(db,p):
             other=[x for x in std['explicit'] if x['tag']==tag and x['code']==ref['code'] and x['edition']!=ref['edition']]
             if other:status='CONFLICTING INFORMATION';reason='Contradictory standard editions; explicit precedence evidence required'
             findings.append(finding('STD_'+str(len(checked)),tag,product,status,reason,standard_reference=ref['code'],standard_edition=ref['edition'],requirement_evidence=[ref['source']] if ref.get('source') else [],fact_ids=[ref['fact_id']] if ref.get('fact_id') else []))
+        if s.get('customer_approvals'):
+            approval=next(a for a in s['customer_approvals']['assessments'] if a['equipment_tag_id']==tag)
+            findings.extend(approval['checks'])
         outcome='NO-GO' if hard else 'INSUFFICIENT DATA' if any(f['decision_impact']=='INSUFFICIENT DATA' for f in findings) else 'CONDITIONAL GO' if any(f['decision_impact']=='CONDITIONAL GO' for f in findings) else 'GO'
         output.append(dict(tag=tag,product_category=product,outcome=outcome,results=findings,hydraulic_selection='UNVERIFIED — no approved curves or compatibility data',coverage_complete=not s['coverage_gaps'] and bool(docs)))
     return s,output,std,rs

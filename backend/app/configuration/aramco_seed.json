@@ -1,0 +1,49 @@
+{
+  "seed_version": "aramco-owner-supplied-2024-2026-v1",
+  "provenance": "Structured data supplied by the application owner in ARAMCO_IMPLEMENTATION_REQUEST.md. The named PDF and PPTX were not supplied or inspected. No live customer source was queried.",
+  "profile": {
+    "customer_key": "saudi-aramco",
+    "customer_name": "Saudi Aramco",
+    "vendor_code": "10066368",
+    "plant_id": "30008606",
+    "manufacturer_name": "KSB Pumps Arabia Ltd.",
+    "manufacturing_location": null,
+    "approval_authority": "Saudi Arabian Oil Company — Supplier Relationship Management",
+    "original_approval_date": "2024-04-01",
+    "original_reference": "SQU-26-24"
+  },
+  "letter": {
+    "title": "Aramco Approval Notification Letter for KSB Pumps Arabia Ltd..pdf",
+    "source_type": "OFFICIAL_HISTORICAL_LETTER_REPORTED_BY_OWNER",
+    "reference": "SQU-26-24",
+    "source_date": "2024-04-01",
+    "source_revision": null,
+    "page": null
+  },
+  "presentation": {
+    "title": "KSB PA main persentation 2026.pptx",
+    "source_type": "INTERNAL_PORTFOLIO_REPORTED_BY_OWNER",
+    "reference": "KSB Arabia product portfolio presentation 2026",
+    "source_date": null,
+    "source_revision": "2026 — as described by owner"
+  },
+  "commodities": [
+    ["6000002283", "PUMP; CENTRIFUGAL; GENERAL SERVICE; HORIZONTAL", "Pump / Pump Set"],
+    ["6000002288", "PUMP; CENTRIFUGAL; VERTICALLY SUSPENDED", "Pump / Pump Set"],
+    ["6000002346", "PUMP; CENTRIFUGAL; GENERAL SERVICE; VERTICAL", "Pump / Pump Set"],
+    ["6000002350", "PUMP; CENT, HORIZ, ASMEB73.1 OR ISO5199", "Pump / Pump Set"],
+    ["6000002355", "PUMP; CENTRIFUGAL; MAIN FIREWATER; HORIZONTAL", "Pump / Pump Set"],
+    ["6000002356", "PUMP; CENTRIFUGAL; END SUCTION; SINGLE STAGE", "Pump / Pump Set"],
+    ["6000011675", "RE-ENGINEERED MACHINED OR WELDED PARTS", "Spare Parts"]
+  ],
+  "products": [
+    {"name":"MegaCPK", "classification":"OH1 – Horizontal Foot-Mounted, Radially Split", "api_classification":"OH1", "code":"6000002350", "design_standards":["ISO 2858","ISO 5199"], "slide":2},
+    {"name":"Etanorm", "classification":"Horizontal General Service", "api_classification":null, "code":"6000002283", "design_standards":["HI","EN 733"], "slide":2},
+    {"name":"RPH", "classification":"OH2 – Horizontal Centerline-Mounted, Radially Split", "api_classification":"OH2", "code":"6000002356", "design_standards":["API 610","ISO 13709"], "slide":2},
+    {"name":"Omega", "classification":"BB1 – Axially Split", "api_classification":"BB1", "code":"6000002355", "design_standards":["HI"], "engineering_notes":"BB1 with deviations from API 610. Never infer full API 610 compliance.", "slide":2},
+    {"name":"WKB", "classification":"VS1 – Vertically Suspended", "api_classification":"VS1", "code":"6000002288", "design_standards":["API 610","ISO 13709"], "slide":3},
+    {"name":"RPH-V", "classification":"VS4 – Vertically Suspended Sump Pump", "api_classification":"VS4", "code":"6000002288", "design_standards":["API 610","ISO 13709"], "slide":3},
+    {"name":"WKTR", "classification":"VS6 – Double-Casing Vertically Suspended", "api_classification":"VS6", "code":"6000002288", "design_standards":["API 610","ISO 13709"], "slide":3},
+    {"name":"Movitec", "classification":"Vertical Inline Multistage", "api_classification":null, "code":"6000002346", "design_standards":["Manufacturer Standard"], "slide":3}
+  ]
+}

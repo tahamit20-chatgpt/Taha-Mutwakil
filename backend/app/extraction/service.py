@@ -10,6 +10,7 @@ FIELDS = {
  'npsha': ('m','m',1,0), 'frequency': ('Hz','Hz',1,0),
  'pressure': ('bar','Pa',100000,0),
  'liquid': None, 'material': None, 'standard': None, 'approval': None,
+ 'required_9com':None, 'vendor_code':None, 'plant_id':None, 'manufacturer_approval':None, 'component_approval':None,
  'pump_type':None, 'configuration':None, 'quantity':('count','count',1,0),
  'description':None, 'design_temperature':('C','K',1,273.15),
  'suction_pressure':('bar','Pa',100000,0), 'discharge_pressure':('bar','Pa',100000,0),
@@ -34,7 +35,10 @@ class Proposal(BaseModel):
 def normalize(field, value, unit):
     if field not in FIELDS: raise ValueError('Unsupported field')
     spec=FIELDS[field]
-    if spec is None: return (value.strip(), '', []) if value.strip() else (None,'',['Empty requirement value'])
+    if spec is None:
+        value=value.strip()
+        if field=='required_9com' and value and not re.fullmatch(r'\d{10}',value):return None,'',['9COM must be an explicit ten-digit identifier; no code inferred']
+        return (value, '', []) if value else (None,'',['Empty requirement value'])
     if field=='quantity' and unit=='':unit='count'
     if unit != spec[0]: return None, spec[1], ['Unsupported or ambiguous unit; engineer correction required']
     try: n=float(value)

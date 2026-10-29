@@ -22,6 +22,7 @@ COPY backend/ /app/backend/
 COPY migrations/ /app/migrations/
 COPY alembic.ini /app/alembic.ini
 COPY fixtures/ /app/fixtures/
+COPY docs/ARAMCO_IMPLEMENTATION_REQUEST.md /app/docs/ARAMCO_IMPLEMENTATION_REQUEST.md
 COPY --from=ui /build/frontend/dist/ /app/frontend/dist/
 COPY infra/seed_demo.py infra/container_tests.py /app/infra/
 RUN chmod -R a+rX /app && groupadd --gid 10001 bidfit && useradd --uid 10001 --gid 10001 --no-create-home bidfit && mkdir /app/.runtime && chown bidfit:bidfit /app/.runtime

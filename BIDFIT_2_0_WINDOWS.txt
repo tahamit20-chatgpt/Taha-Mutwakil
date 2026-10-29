@@ -1,3 +1,6 @@
+ARAMCO REGISTRY UPDATE: Read BIDFIT_ARAMCO_WINDOWS.txt for the new examples,
+source limitations and registry walkthrough. The existing guide follows.
+
 BIDFIT 2.0 - WINDOWS UPGRADE AND WALKTHROUGH
 ==========================================
 Read WINDOWS-START-HERE.txt for installing Docker Desktop/WSL and Chrome.
@@ -58,7 +61,9 @@ not claimed official brand specifications. Do not upload confidential
 RFQ files as branding assets.
 
 IMPORTANT LIMITS
-- All datasets/rules are synthetic demonstrations; extraction is pattern
+- RFQs and engineering rules are synthetic demonstrations; approval registry
+  references are supplied structured metadata with pending source documents.
+  Extraction is pattern
   matching, not actual AI understanding in this default mode.
 - Standards identifiers are not licensed clauses or proof of compliance.
 - No actual KSB curves, product boundaries, prices, approval records or

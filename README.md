@@ -1,3 +1,5 @@
+> Aramco approval registry upgrade: [Windows guide](BIDFIT_ARAMCO_WINDOWS.txt), [registry](docs/ARAMCO_9COM_APPROVAL_REGISTRY.md), [provenance](docs/APPROVAL_DATA_PROVENANCE.md). Historical references and current approval remain separate; the original PDF/PPTX were not supplied.
+
 # BidFit 2.0 — incremental RFQ workflow upgrade
 
 **Windows beginner? Open WINDOWS-START-HERE.txt or WINDOWS_START_HERE.html first.**

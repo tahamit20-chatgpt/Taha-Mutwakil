@@ -118,6 +118,11 @@ def process_rfq(pid:str,body:ProcessInput,user=Depends(identity),db=Depends(db_s
     s,tags,std,rs=svc.compliance(db,p)
     facts,documents=svc.source_rows(db,p)
     snapshot=dict(project_id=p.id,project_name=p.data['name'],project_version=p.lock_version,classification=p.data['classification'],equipment=svc.equipment(p),summary=s,standards=std,tags=tags,outcome=rollup([t['outcome'] for t in tags]),compliance_matrix=[f for t in tags for f in t['results']],facts=facts,documents=documents,rule_pack=[serialize(r) for r in rs],rule_pack_hash=svc.registry_hash(db,p.tenant_id),registry_hash=svc.registry_hash(db,p.tenant_id),namespace='synthetic-demo-v2',human_fact_reviews=[serialize(r) for r in svc.rows(db,p.tenant_id,'review',pid)],engineer_disposition='Preliminary; post-run review history is append-only',commercial=p.data['commercial'],versions=dict(workflow='2.0',parser='document-v2',code='2.0.0',report='2.0'),assumptions=['Synthetic-only preliminary screening — not KSB certification','No complete portfolio exclusion, licensed standard clauses, performance curves or validated hydraulic selection supplied','Standards suggestions alone never create mandatory obligations','Commercial attractiveness cannot change technical eligibility'])
+    if s.get('customer_approvals'):
+        snapshot['customer_approvals']=s['customer_approvals']
+        snapshot['approval_registry_hash']=s['customer_approvals']['registry_hash']
+        snapshot['versions']['approvals']='aramco-evidence-v1'
+        snapshot['assumptions'].append('Aramco historical commodity and portfolio records are owner-supplied structured references; named source attachments and current verification are pending')
     snapshot['run_hash']=digest(snapshot);r=add(db,'evaluation',user['tenant'],pid,snapshot=snapshot);audit(db,user,pid,'RFQ_PROCESSED',r.id);db.commit();return serialize(r)
 
 @router.patch('/documents/{rid}/metadata')

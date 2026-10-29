@@ -1,0 +1,3 @@
+SYNTHETIC DEMO
+Fictional source used only to exercise private evidence storage.
+This is not an Aramco approval and must never verify live status.

@@ -25,3 +25,13 @@ Existing document rows add revision_of, revision number, category confirmation a
 Evaluation snapshots add classification, summary hash/review, standards layers, complete matrix, exact active rule versions/hash and original fact reviews. Changes to the active approved registry invalidate current approval even if project facts did not change. Exports always render that stored snapshot. Post-run adjudications remain append-only in History and do not retroactively change historic reports. Candidate/pricing/quotation drafts do not silently alter technical facts.
 
 Full normalization, DB-enforced immutable triggers/RLS, retention/deletion workflows and administrative membership management remain future work; API immutability does not claim database-operator protection.
+
+
+## Customer approval extension (migration 0002)
+
+`approval_profiles` → `approval_commodities`; `approval_product_series` ↔
+`approval_commodities` via `approval_product_mappings`; each association records
+profile, source and plant. `approval_evidence` stores private source provenance;
+`approval_verifications` appends dated, superseding reviews. Composite tenant keys
+enforce association isolation. Domain approval events, assignments and evidence
+policies reuse existing records. See ARAMCO_9COM_APPROVAL_REGISTRY.md.

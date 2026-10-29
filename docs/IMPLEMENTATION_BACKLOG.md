@@ -18,3 +18,14 @@ Existing-working baseline to revalidate: projects, upload/worker, cited facts/co
 - **Branding — partial:** centralized provisional blue/grey tokens and exact-original PNG upload displayed on login/navigation. Original inline image bytes could not be accessed as files; exact prebundled logo/secondary marks remain outstanding. No logo was recreated or substituted.
 
 Next recommended work: supply/configure the original KSB logo file; have engineering define the minimum real screening coverage and authorize source/rule/capability data; then validate one product family's rules and references before activating live engineering or product selection. Corporate identity configuration, full role/membership administration, malware scanning, retention/RLS and production operations remain release gates. Native Windows verification is still required. No public deployment or purchase was performed.
+
+
+## Aramco Approval Intelligence upgrade
+
+Implemented: relational historical registry, eight portfolio associations, source
+provenance, item-level deterministic checks, administration, candidate review,
+policy versions, history/staleness, frozen reports and synthetic examples.
+
+Pending: original PDF/PPTX inspection, controlled real document ingestion,
+authoritative current source validation, configuration/component approvals and
+live exclusion rules. Metadata or synthetic verification never closes these gaps.

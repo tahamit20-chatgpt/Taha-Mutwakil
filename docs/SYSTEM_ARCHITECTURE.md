@@ -23,3 +23,12 @@ All visual tokens are centralized in `frontend/src/style.css`. Blue/grey values 
 ## Parsing limits
 
 General ZIP: at most 100 archive entries and 20 total project files including the container; 25 MiB per original/child, 50 MiB expanded total, maximum 200:1 per-entry expansion. No nested archives, unsafe/duplicate paths, links or encryption. Office packages: at most 1,000 parts, 50 worksheets and 50,000 cells, within the same byte limits. XML entities are disabled. Relevant unsupported drawings, formulas, scans and attachments remain explicit gaps rather than being silently ignored.
+
+
+## Aramco approval evidence extension
+
+Six relational tables supplement the original record store without replacing it.
+The new approval service supplies deterministic evidence findings to the same
+reviewed-summary/compliance/decision/report workflow. Customer scope, permissions,
+private source storage and frozen evidence are enforced server-side. See
+ARAMCO_9COM_APPROVAL_REGISTRY.md and APPROVAL_VERIFICATION_LOGIC.md.

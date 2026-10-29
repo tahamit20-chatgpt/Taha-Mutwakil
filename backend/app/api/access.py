@@ -28,5 +28,8 @@ def snapshot_current(db,run,user):
     if run.data['snapshot'].get('registry_hash'):
         from app.workflow.service import registry_hash
         if registry_hash(db,p.tenant_id)!=run.data['snapshot']['registry_hash']:raise HTTPException(409,'Approved rule registry changed; reprocess RFQ')
+    if run.data['snapshot'].get('approval_registry_hash'):
+        from app.approvals.service import registry_hash as approval_hash
+        if approval_hash(db,p.tenant_id)!=run.data['snapshot']['approval_registry_hash']:raise HTTPException(409,'Customer approval evidence or verification date changed; reprocess RFQ')
     return p
 
