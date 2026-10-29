@@ -1,0 +1,13 @@
+[
+ {"code":"API 610","category":"Pump","products":["Pump / Pump Set"],"reason":"Possible centrifugal pump reference; application, RFQ edition and engineering confirmation required"},
+ {"code":"ISO 13709","category":"Pump","products":["Pump / Pump Set"],"reason":"Possible pump reference; not inferred as mandatory from segment"},
+ {"code":"ISO 5199","category":"Pump","products":["Pump / Pump Set"],"reason":"Possible technical pump reference; no approved clauses loaded"},
+ {"code":"ISO 2858","category":"Pump","products":["Pump / Pump Set"],"reason":"Possible dimensional reference; no compliance inferred"},
+ {"code":"ASME B73.1","category":"Pump","products":["Pump / Pump Set"],"reason":"Possible pump design reference; confirm applicability"},
+ {"code":"API 682","category":"Seal","products":["Pump / Pump Set"],"reason":"Possible seal reference; no seal configuration or clause inferred"},
+ {"code":"Saudi Aramco SAES","category":"Customer","products":[],"customer":"Saudi Aramco","reason":"Customer profile suggests checking the actual contract references, codes and editions"},
+ {"code":"Saudi Aramco SAMSS","category":"Customer","products":[],"customer":"Saudi Aramco","reason":"Customer profile suggests checking actual material specification references"},
+ {"code":"Customer inspection requirements","category":"Customer","products":[],"reason":"Check RFQ-specific inspection documentation"},
+ {"code":"Hydraulic Institute guidance","category":"Hydraulic","products":["Pump / Pump Set"],"reason":"Applicable document, edition and engineering method not yet approved"},
+ {"code":"9COM eligibility","category":"Approval","products":[],"customer":"Saudi Aramco","reason":"Approved eligibility evidence must be supplied; customer identity alone proves nothing"}
+]

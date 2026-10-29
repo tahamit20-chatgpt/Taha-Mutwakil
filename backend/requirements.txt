@@ -12,3 +12,4 @@ authlib==1.6.0
 itsdangerous==2.2.0
 pytest==8.3.5
 reportlab==4.4.1
+defusedxml==0.7.1

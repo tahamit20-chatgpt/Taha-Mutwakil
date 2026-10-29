@@ -28,6 +28,8 @@ click==8.5.0
     # via uvicorn
 cryptography==50.0.2
     # via authlib
+defusedxml==0.7.1
+    # via -r backend/requirements.txt
 fastapi==0.115.12
     # via -r backend/requirements.txt
 greenlet==3.5.6

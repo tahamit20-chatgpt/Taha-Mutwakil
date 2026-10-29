@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "product_categories": ["Pump / Pump Set", "Valve", "Spare Parts", "Mixed Package"],
+  "markets": {
+    "Water": ["Desalination", "Water Supply", "Wastewater", "Water Treatment", "Water Distribution", "Other / To Be Determined"],
+    "Energy": ["Power Generation", "Cooling Water Systems", "Auxiliary Systems", "Other / To Be Determined"],
+    "Mining": ["Slurry Handling", "Non-Slurry Applications", "Dewatering", "Process Water", "Other / To Be Determined"],
+    "General Industry": ["Industrial Process", "Plant Utilities", "Cooling and Circulation", "Other / To Be Determined"],
+    "Building Services": ["HVAC", "Fire Protection", "Building Water Supply", "Pressure Boosting", "Drainage", "Other / To Be Determined"],
+    "Petrochemicals / Chemicals": ["Oil & Gas", "Chemical Processing", "Refining", "Petrochemical Processing", "Other / To Be Determined"]
+  },
+  "customers": ["Saudi Aramco", "Saudi Water Authority", "Saudi Electricity Company", "Ma'aden", "Other / General Customer"],
+  "document_categories": ["RFQ / Inquiry", "Material Requisition", "Equipment Datasheet", "Technical Specification", "Scope of Supply", "Bill of Quantities", "P&ID", "General Arrangement Drawing", "Hydraulic Calculation", "Applicable Standards", "Vendor Requirement List", "Compliance Sheet", "Clarification List", "Commercial Terms", "Other Attachments"],
+  "required_fields": {
+    "Pump / Pump Set": ["flow", "head", "liquid", "npsha", "npsh_basis"],
+    "Valve": ["valve_type", "nominal_size", "pressure_class", "material", "liquid"],
+    "Spare Parts": ["manufacturer", "equipment_model", "part_number", "quantity"]
+  }
+}

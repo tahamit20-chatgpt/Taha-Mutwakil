@@ -1,7 +1,7 @@
 import os, json, secrets, hashlib, time
 from pathlib import Path
 from typing import Literal
-from fastapi import FastAPI, Depends, Request, Response, HTTPException, UploadFile, File, Header
+from fastapi import FastAPI, Depends, Request, Response, HTTPException, UploadFile, File, Header, Form
 from fastapi.responses import FileResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
@@ -16,7 +16,7 @@ from app.extraction.service import normalize, FIELDS
 from app.rules.engine import evaluate_tag, rollup, PACK, PACK_HASH, digest, power
 from app.reports.service import render
 
-app=FastAPI(title='BidFit Phase 1 • synthetic screening',version='0.1.0')
+app=FastAPI(title='BidFit 2.0 • preliminary RFQ qualification',version='2.0.0')
 secret_path=ROOT/'.runtime/session-secret';secret_path.parent.mkdir(exist_ok=True)
 try:
     with secret_path.open('x') as secret_file: secret_file.write(secrets.token_urlsafe(48))
@@ -47,7 +47,8 @@ class NoteIn(Strict):
 class AdjudicationIn(Strict):
     reason: str=Field(min_length=3,max_length=2000)
     evidence: str=Field(min_length=3,max_length=2000)
-    disposition: Literal['ACKNOWLEDGED','DECLINED']
+    disposition: Literal['ACKNOWLEDGED','DECLINED','CLARIFICATION_REQUESTED','RETURNED_FOR_CORRECTION','OVERRIDE']
+    requested_outcome: Literal['GO','CONDITIONAL GO','INSUFFICIENT DATA','NO-GO']|None=None
 class CommercialIn(Strict):
     expected_version: int
     assessment: str=Field(max_length=4000)
@@ -56,30 +57,7 @@ class DecisionIn(Strict):
     decision: Literal['PARTICIPATE','DECLINE','HOLD']
     reason: str=Field(min_length=3,max_length=2000)
 
-def db_session():
-    with Session() as db: yield db
-
-def project(db, pid, user, lock=False):
-    q=select(Record).where(Record.id==pid,Record.kind=='project',Record.tenant_id==user['tenant'])
-    if lock: q=q.with_for_update()
-    row=db.scalar(q)
-    if not row or user['user'] not in row.data['members']: raise HTTPException(404,'Project not found')
-    return row
-
-def object_row(db,rid,user,kind=None):
-    row=db.get(Record,rid)
-    if not row or row.tenant_id!=user['tenant'] or (kind and row.kind!=kind): raise HTTPException(404,'Object not found')
-    project(db,row.project_id,user)
-    return row
-
-def audit(db,user,pid,action,rid): add(db,'audit',user['tenant'],pid,action=action,actor=user['user'],object_id=rid)
-def check_version(row,expected):
-    if row.lock_version!=expected: raise HTTPException(409,'Stale version — reload and review current evidence')
-
-def snapshot_current(db,run,user):
-    p=project(db,run.project_id,user,True)
-    if p.lock_version!=run.data['snapshot']['project_version']: raise HTTPException(409,'Evaluation stale; create a new run')
-    return p
+from app.api.access import db_session, project, object_row, audit, check_version, snapshot_current
 
 @app.middleware('http')
 async def headers(request,call_next):
@@ -91,7 +69,7 @@ async def headers(request,call_next):
     return response
 
 @app.get('/api/v1/health')
-def health(): return {'status':'ok','mode':'SYNTHETIC DEMO' if DEMO else 'configured','extraction_provider':PROVIDER}
+def health(): return {'status':'ok','mode':'SYNTHETIC DEMO' if DEMO else 'configured','extraction_provider':PROVIDER,'company_signin_configured':bool(os.getenv('OIDC_ISSUER'))}
 @app.get('/api/v1/ready')
 def ready(db=Depends(db_session)):
     from sqlalchemy import text
@@ -130,7 +108,13 @@ def logout(response:Response,user=Depends(identity),db=Depends(db_session)):
     db.delete(db.get(Record,user['session_id']));db.commit();response.delete_cookie('bidfit_session');return {'ok':True}
 @app.get('/api/v1/projects')
 def projects(user=Depends(identity),db=Depends(db_session)):
-    return [serialize(p) for p in db.scalars(select(Record).where(Record.kind=='project',Record.tenant_id==user['tenant'])).all() if user['user'] in p.data['members']]
+    result=[]
+    for p in db.scalars(select(Record).where(Record.kind=='project',Record.tenant_id==user['tenant'])).all():
+        if user['user'] not in p.data['members']:continue
+        latest=db.scalar(select(Record).where(Record.kind=='evaluation',Record.project_id==p.id).order_by(Record.created_at.desc()).limit(1))
+        activity=db.scalar(select(Record.created_at).where(Record.project_id==p.id).order_by(Record.created_at.desc()).limit(1))
+        result.append({**serialize(p),'latest_outcome':latest.data['snapshot']['outcome'] if latest else 'NOT EVALUATED','last_updated':activity or p.created_at,'workflow_stage':'Technical review' if latest else 'RFQ understanding' if p.data.get('workflow_version') else 'Original demo workflow'})
+    return result
 @app.post('/api/v1/projects',status_code=201)
 def create_project(body:ProjectIn,user=Depends(identity),db=Depends(db_session)):
     engineer(user)
@@ -148,23 +132,30 @@ def get_project(pid:str,user=Depends(identity),db=Depends(db_session)):
     # Object keys remain server-side, even in authenticated manifests.
     for d in records['document']: d.pop('object_key',None)
     jobs=db.scalars(select(Job).where(Job.project_id==pid,Job.tenant_id==user['tenant'])).all()
+    from app.workflow.service import registry_hash
+    for run in records['evaluation']:
+        snap=run['snapshot'];run['is_stale']=snap['project_version']!=p.lock_version or (bool(snap.get('registry_hash')) and snap['registry_hash']!=registry_hash(db,p.tenant_id))
     return {**serialize(p),**records,'jobs':[dict(id=j.id,state=j.state,stage=j.stage,attempt=j.attempt,error=j.error) for j in jobs]}
 @app.post('/api/v1/projects/{pid}/documents',status_code=202)
-async def upload(pid:str,file:UploadFile=File(...),idempotency_key:str=Header(...,max_length=128),user=Depends(identity),db=Depends(db_session)):
+async def upload(pid:str,file:UploadFile=File(...),idempotency_key:str=Header(...,max_length=128),revision_of:str|None=Form(None),user=Depends(identity),db=Depends(db_session)):
     engineer(user);p=project(db,pid,user,True)
     body=await file.read(25*1024*1024+1)
     if len(body)>25*1024*1024: raise HTTPException(413,'25 MiB file limit')
     if not body: raise HTTPException(422,'Empty file')
+    previous=None
+    if revision_of:
+        previous=object_row(db,revision_of,user,'document')
+        if previous.project_id!=pid:raise HTTPException(404,'Previous revision not found in this project')
     sha=hashlib.sha256(body).hexdigest()
     old=db.scalar(select(Job).where(Job.tenant_id==user['tenant'],Job.project_id==pid,Job.key==idempotency_key))
     if old:
         doc=db.get(Record,old.document_id)
-        if doc.data['sha256']!=sha or doc.data['filename']!=Path(file.filename or '').name: raise HTTPException(409,'Idempotency key used for different upload')
+        if doc.data['sha256']!=sha or doc.data['filename']!=Path(file.filename or '').name or doc.data.get('revision_of')!=revision_of: raise HTTPException(409,'Idempotency key used for different upload')
         return {'document_id':doc.id,'job_id':old.id}
     docs=db.scalars(select(Record).where(Record.kind=='document',Record.project_id==pid)).all()
     if len(docs)>=20: raise HTTPException(422,'20 files/project limit')
     name=Path(file.filename or 'unknown').name[:200]
-    allowed=name.lower().endswith(('.txt','.pdf'))
+    allowed=name.lower().endswith(('.txt','.pdf','.docx','.xlsx','.zip'))
     # Unsupported files are retained as explicit gaps; they are never sent to a provider.
     state='QUARANTINED' if allowed else 'FAILED'
     gap=[] if allowed else ['Unsupported relevant file; replace with text PDF/TXT or resolve coverage']
@@ -174,7 +165,7 @@ async def upload(pid:str,file:UploadFile=File(...),idempotency_key:str=Header(..
     key=user['tenant']+'/'+pid+'/'+uid()
     storage.put(key,body)
     doc=add(db,'document',user['tenant'],pid,filename=name,object_key=key,sha256=sha,state=state,gaps=gap,page_count=0,
-        classification='synthetic RFQ',version=1,scan='DEMO marker check only')
+        classification='synthetic RFQ',version=(previous.data.get('version',1)+1 if previous else 1),revision_of=revision_of,revision='',document_number='',category='Other Attachments',category_status='USER_CONFIRMATION_REQUIRED',scan='DEMO marker check only')
     job=Job(id=uid(),tenant_id=user['tenant'],project_id=pid,document_id=doc.id,key=idempotency_key,state='QUEUED' if state=='QUARANTINED' else 'FAILED',error=gap[0] if gap else None)
     db.add(job);p.lock_version+=1;audit(db,user,pid,'DOCUMENT_UPLOADED',doc.id);db.commit()
     return JSONResponse({'document_id':doc.id,'job_id':job.id,'state':state},status_code=202 if allowed else 415)
@@ -182,7 +173,8 @@ async def upload(pid:str,file:UploadFile=File(...),idempotency_key:str=Header(..
 def content(rid:str,user=Depends(identity),db=Depends(db_session)):
     doc=object_row(db,rid,user,'document');audit(db,user,doc.project_id,'DOCUMENT_DOWNLOAD',rid);db.commit()
     # Authenticated proxy: current membership checked for each download; bucket never public.
-    return Response(storage.get(doc.data['object_key']),media_type='application/octet-stream',headers={'Content-Disposition':'attachment; filename="source-document"'})
+    from urllib.parse import quote
+    return Response(storage.get(doc.data['object_key']),media_type='application/octet-stream',headers={'Content-Disposition':"attachment; filename*=UTF-8''"+quote(doc.data['filename'])})
 @app.get('/api/v1/jobs/{jid}')
 def get_job(jid:str,user=Depends(identity),db=Depends(db_session)):
     job=db.get(Job,jid)
@@ -203,10 +195,13 @@ def review(rid:str,body:ReviewIn,user=Depends(identity),db=Depends(db_session)):
 @app.post('/api/v1/projects/{pid}/evaluations',status_code=201)
 def evaluate(pid:str,body:EvalIn,user=Depends(identity),db=Depends(db_session)):
     engineer(user);p=project(db,pid,user,True);check_version(p,body.expected_version)
+    if p.data.get('workflow_version')=='2.0':
+        from app.workflow.routes import process_rfq,ProcessInput
+        return process_rfq(pid,ProcessInput(expected_version=body.expected_version),user,db)
     rows=db.scalars(select(Record).where(Record.project_id==pid).order_by(Record.id)).all()
     facts=[serialize(r) for r in rows if r.kind=='fact'];docs=[serialize(r) for r in rows if r.kind=='document']
     for d in docs:d.pop('object_key',None)
-    coverage=bool(docs) and all(d['state'] in ('NEEDS_REVIEW','READY_FOR_EVALUATION') and not d['gaps'] for d in docs)
+    coverage=bool(docs) and all(d['state'] in ('NEEDS_REVIEW','READY_FOR_EVALUATION','EXPANDED') and not d['gaps'] for d in docs)
     tags=[evaluate_tag(t,facts,coverage,p.data['synthetic']) for t in p.data['tags']]
     snapshot=dict(project_id=pid,project_name=p.data['name'],project_version=p.lock_version,tags=tags,outcome=rollup([t['outcome'] for t in tags]),
         facts=facts,documents=docs,human_fact_reviews=[serialize(r) for r in rows if r.kind=='review'],engineer_disposition='Post-run dispositions are append-only in review history, outside this frozen report',rule_pack=PACK,rule_pack_hash=PACK_HASH,namespace='synthetic-demo-v1',
@@ -225,6 +220,9 @@ def export(rid:str,format:Literal['html','json','csv']='html',user=Depends(ident
 @app.post('/api/v1/evaluations/{rid}/adjudications')
 def adjudicate(rid:str,body:AdjudicationIn,user=Depends(identity),db=Depends(db_session)):
     engineer(user);run=object_row(db,rid,user,'evaluation');snapshot_current(db,run,user)
+    if body.disposition=='OVERRIDE':
+        order=['GO','CONDITIONAL GO','INSUFFICIENT DATA','NO-GO']
+        if body.requested_outcome is None or order.index(body.requested_outcome)<order.index(run.data['snapshot']['outcome']):raise HTTPException(422,'A free-text override cannot improve technical eligibility. Correct evidence or approved rules and re-evaluate.')
     row=add(db,'adjudication',user['tenant'],run.project_id,evaluation_id=rid,run_hash=run.data['snapshot']['run_hash'],actor=user['user'],**body.model_dump())
     audit(db,user,run.project_id,'ADJUDICATED',row.id);db.commit();return serialize(row)
 @app.put('/api/v1/projects/{pid}/commercial-assessment')
@@ -252,5 +250,8 @@ static=ROOT/'frontend/dist'
 def fixture(scenario:str,user=Depends(identity)):
     if scenario not in ('go','conditional','no-go','missing','conflict','multi-tag'): raise HTTPException(404,'Fixture not found')
     return FileResponse(ROOT/'fixtures/synthetic'/f'{scenario}.txt',media_type='text/plain',filename=f'{scenario}.txt')
+
+from app.workflow.routes import router as workflow_router
+app.include_router(workflow_router)
 
 if static.exists(): app.mount('/',StaticFiles(directory=static,html=True),name='ui')

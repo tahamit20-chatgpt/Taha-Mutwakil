@@ -10,6 +10,15 @@ FIELDS = {
  'npsha': ('m','m',1,0), 'frequency': ('Hz','Hz',1,0),
  'pressure': ('bar','Pa',100000,0),
  'liquid': None, 'material': None, 'standard': None, 'approval': None,
+ 'pump_type':None, 'configuration':None, 'quantity':('count','count',1,0),
+ 'description':None, 'design_temperature':('C','K',1,273.15),
+ 'suction_pressure':('bar','Pa',100000,0), 'discharge_pressure':('bar','Pa',100000,0),
+ 'differential_pressure':('bar','Pa',100000,0), 'vapor_pressure':('bar','Pa',100000,0),
+ 'speed':('rpm','rpm',1,0), 'mechanical_seal':None, 'installation':None, 'inspection':None,
+ 'documentation':None,'bep_flow':('m3/h','m3/s',1/3600,0), 'minimum_flow':('m3/h','m3/s',1/3600,0),
+ 'valve_type':None, 'nominal_size':None, 'pressure_class':None, 'end_connections':None,
+ 'actuation':None,'testing':None,'manufacturer':None,'product_family':None,'equipment_model':None,
+ 'serial_number':None,'part_number':None,'part_description':None,'compatibility_reference':None,'availability':None,
  'npsh_basis': None, 'pressure_basis': None, 'prohibition': None, 'action': None,
 }
 class Proposal(BaseModel):
@@ -26,15 +35,20 @@ def normalize(field, value, unit):
     if field not in FIELDS: raise ValueError('Unsupported field')
     spec=FIELDS[field]
     if spec is None: return value.strip(), '', []
+    if field=='quantity' and unit=='':unit='count'
     if unit != spec[0]: return None, spec[1], ['Unsupported or ambiguous unit; engineer correction required']
     try: n=float(value)
     except ValueError: return None,spec[1],['Invalid number']
-    if not math.isfinite(n) or (n < 0 and field!='temperature') or (field=='temperature' and n < -273.15) or (field in ('density','efficiency') and n <= 0) or (field=='efficiency' and n>1):
+    if not math.isfinite(n) or (n < 0 and field not in ('temperature','design_temperature')) or (field in ('temperature','design_temperature') and n < -273.15) or (field in ('density','efficiency') and n <= 0) or (field=='efficiency' and n>1):
         return None,spec[1],['Invalid physical value']
+    if field=='quantity' and (n<1 or not n.is_integer()):return None,'count',['Quantity must be a positive integer']
     return n*spec[2]+spec[3],spec[1],[]
 
 def parse(body, filename):
     if len(body)>25*1024*1024: raise ValueError('25 MiB file limit exceeded')
+    if filename.lower().endswith(('.docx','.xlsx')):
+        from app.documents.office import office
+        return office(body,filename)['pages']
     if filename.lower().endswith('.pdf'):
         if not body.startswith(b'%PDF-'): raise ValueError('PDF signature does not match')
         reader=PdfReader(io.BytesIO(body))
@@ -85,3 +99,11 @@ def extract(pages, provider='demo'):
         if p.line<1 or p.line>len(lines) or lines[p.line-1]!=p.quote or p.raw_value not in p.quote:
             raise ValueError('Extraction citation does not exactly match source')
     return proposed
+
+
+def parse_rich(body,filename):
+    if filename.lower().endswith(('.docx','.xlsx')):
+        from app.documents.office import office
+        return office(body,filename)
+    pages=parse(body,filename)
+    return dict(pages=pages,locations=[[] for _ in pages],kinds=['pdf' if filename.lower().endswith('.pdf') else 'lines' for _ in pages],gaps=[])

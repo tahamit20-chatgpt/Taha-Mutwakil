@@ -5,7 +5,7 @@ from sqlalchemy import select
 from app.db import Record, add, Session
 from app.config import DEMO
 DEMO_USERS={
- 'alice':dict(user='alice',tenant='demo-tenant-a',role='Engineer'),
+ 'alice':dict(user='alice',tenant='demo-tenant-a',role='Engineer',permissions=['configuration','engineering_approval']),
  'bob':dict(user='bob',tenant='demo-tenant-a',role='Engineer'),
  'viewer':dict(user='viewer',tenant='demo-tenant-a',role='Viewer'),
  'outsider':dict(user='outsider',tenant='demo-tenant-b',role='Engineer')}
@@ -44,3 +44,7 @@ def local_demo_client(host):
         peer=ipaddress.ip_address(host)
         return any(peer in ipaddress.ip_network(c.strip()) for c in os.getenv('BIDFIT_DEMO_NETWORKS','').split(',') if c.strip())
     except ValueError: return False
+
+
+def require_permission(user, permission):
+    if permission not in user.get("permissions",[]): raise HTTPException(403,"Designated "+permission+" permission required")
