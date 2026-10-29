@@ -1,7 +1,7 @@
 from typing import Literal
 from pydantic import BaseModel,ConfigDict,Field,model_validator
 from datetime import date
-class Strict(BaseModel): model_config=ConfigDict(extra='forbid')
+class Strict(BaseModel): model_config=ConfigDict(extra='forbid',str_strip_whitespace=True)
 Product=Literal['Pump / Pump Set','Valve','Spare Parts','Mixed Package']
 class Classification(Strict):
     product_category: Product
@@ -69,6 +69,7 @@ class RuleInput(Strict):
     source_reference:str=Field(min_length=5,max_length=1000)
     capability_reference:str|None=Field(default=None,max_length=1000)
     effective_date:date
+    pressure_basis:Literal['gauge','absolute','differential']|None=None
     namespace:Literal['synthetic-demo-v2']='synthetic-demo-v2'
     @model_validator(mode='after')
     def validate_operator(self):
@@ -79,8 +80,11 @@ class RuleInput(Strict):
             if self.minimum is not None and self.maximum is not None and self.minimum>self.maximum: raise ValueError('Invalid bounds')
             if FIELDS[self.field] is None: raise ValueError('Range requires numeric field')
             if self.units != FIELDS[self.field][1]: raise ValueError('Rule bounds must use canonical SI units')
+        if self.operator=='enum_in' and FIELDS[self.field] is not None:raise ValueError('Enum operator requires a text field')
+        if self.field in ('pressure','suction_pressure','discharge_pressure','differential_pressure','vapor_pressure') and self.operator=='range' and not self.pressure_basis:raise ValueError('Pressure comparison requires explicit gauge/absolute/differential basis')
         if self.operator=='enum_in' and not self.allowed_values: raise ValueError('Enum requires allowed values')
         if self.project_prohibition and (self.scope!='project' or self.waiver_policy!='NON_WAIVABLE'): raise ValueError('Project prohibition must be project-scoped and non-waivable')
+        if self.project_prohibition and (self.operator!='enum_in' or self.confirmed_prohibition_value in self.allowed_values):raise ValueError('Project prohibition requires a text enum with an explicit excluded value')
         if self.project_prohibition and not self.confirmed_prohibition_value: raise ValueError('Explicit confirmed prohibition value required')
         if self.severity=='HARD STOP' and not self.project_prohibition: raise ValueError('Hard stop requires explicit approved project prohibition')
         if self.standard_id and (not self.standard_edition or not self.clause_reference): raise ValueError('Standard-bound rule requires edition and verified source clause identifier')

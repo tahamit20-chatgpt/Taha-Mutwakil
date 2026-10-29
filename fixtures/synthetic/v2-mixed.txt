@@ -1,0 +1,29 @@
+SYNTHETIC TRAINING RFQ — NOT KSB DATA
+This document only exercises fictional demo screening, not pump selection.
+Tag: P-101
+flow: 100 m3/h
+head: 50 m
+liquid: demo-water
+material: demo-alloy
+approval: demo-approved
+npsh_basis: demo-datum
+prohibition: none
+action: none
+density: 1000 kg/m3
+efficiency: 0.75 fraction
+npsha: 6 m
+quantity: 2 count
+
+Tag: V-101
+valve_type: demo-valve
+nominal_size: DN50
+pressure_class: demo-class
+material: demo-alloy
+liquid: demo-water
+quantity: 1 count
+
+Tag: S-101
+manufacturer: demo-manufacturer
+equipment_model: demo-model
+part_number: DEMO-001
+quantity: 3 count

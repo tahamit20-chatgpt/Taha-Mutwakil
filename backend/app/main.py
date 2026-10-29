@@ -29,7 +29,7 @@ if os.getenv('OIDC_ISSUER'):
         server_metadata_url=os.environ['OIDC_ISSUER'].rstrip('/')+'/.well-known/openid-configuration',
         client_kwargs={'scope':'openid email profile','code_challenge_method':'S256'})
 
-class Strict(BaseModel): model_config=ConfigDict(extra='forbid')
+class Strict(BaseModel): model_config=ConfigDict(extra='forbid',str_strip_whitespace=True)
 class ProjectIn(Strict):
     name: str=Field(min_length=1,max_length=160)
     tags: list[str]=Field(min_length=1,max_length=20)

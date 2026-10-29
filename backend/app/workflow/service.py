@@ -58,12 +58,15 @@ def summary(db,p):
         for field,fs in fields.items():
             values={json.dumps(f['normalized_value'],sort_keys=True) for f in fs if f['normalized_value'] is not None}
             if len(values)>1:conflicts.append(dict(tag=tag,field=field,fact_ids=[f['id'] for f in fs],reason='Conflicting requirements; upload order does not establish precedence'))
+        quantities=fields.get('quantity',[])
+        if item.get('quantity') is not None and any(f['status']=='ACCEPTED' and f['normalized_value']!=item['quantity'] for f in quantities):
+            conflicts.append(dict(tag=tag,field='quantity',fact_ids=[f['id'] for f in quantities],reason='Equipment register quantity differs from accepted document quantity; correct classification or evidence'))
         for field in m['required_fields'].get(item['product_category'],[]):
             if not any(f['status']=='ACCEPTED' and f['normalized_value'] is not None for f in fields.get(field,[])):
                 missing.append(dict(tag=tag,field=field,reason='Missing accepted input; no value inferred'))
         groups.append(dict(**item,fields=fields))
     coverage_gaps=[dict(document_id=d['id'],filename=d['filename'],gaps=d.get('gaps') or ['Document processing not complete']) for d in docs if d.get('state') not in ('NEEDS_REVIEW','READY_FOR_EVALUATION','EXPANDED') or d.get('gaps')]
-    base=dict(classification=p.data.get('classification'),equipment=groups,documents=docs,missing=missing,conflicts=conflicts,coverage_gaps=coverage_gaps,unreviewed_count=sum(f['status']=='PROPOSED' for f in facts),notes=p.data.get('summary_notes',''),method='DEMO_PATTERN_NOT_AI' if all(f['method']=='DEMO_PATTERN_NOT_AI' for f in facts) else 'LLM_PROPOSALS_REQUIRE_REVIEW')
+    base=dict(project_name=p.data['name'],classification=p.data.get('classification'),equipment=groups,documents=docs,missing=missing,conflicts=conflicts,coverage_gaps=coverage_gaps,unreviewed_count=sum(f['status']=='PROPOSED' for f in facts),notes=p.data.get('summary_notes',''),method='DEMO_PATTERN_NOT_AI' if all(f['method']=='DEMO_PATTERN_NOT_AI' for f in facts) else 'LLM_PROPOSALS_REQUIRE_REVIEW')
     base['summary_hash']=digest(base)
     reviews=rows(db,p.tenant_id,'summary_review',p.id)
     base['reviewed']=any(r.data['summary_hash']==base['summary_hash'] for r in reviews)
@@ -141,9 +144,12 @@ def compliance(db,p):
             fs=[f for f in item_facts if f['field']==r['field']]
             accepted=[f for f in fs if f['status']=='ACCEPTED' and f['normalized_value'] is not None]
             vals={json.dumps(f['normalized_value'],sort_keys=True) for f in accepted}
+            basis_facts=[f for f in item_facts if f['field']=='pressure_basis' and f['status']=='ACCEPTED']
             status='NOT VERIFIED';reason='Required rule is not approved or is not yet effective';impact='INSUFFICIENT DATA'
             if r['approval_status']=='APPROVED' and date.fromisoformat(r['effective_date'])<=date.today():
-                if len(vals)>1:status='CONFLICTING INFORMATION';reason='Accepted requirements contradict one another'
+                if r.get('pressure_basis') and (not basis_facts or any(f['normalized_value']!=r['pressure_basis'] for f in basis_facts)):
+                    status='MISSING INFORMATION';reason='Explicit pressure basis matching the rule is missing or conflicting'
+                elif len(vals)>1:status='CONFLICTING INFORMATION';reason='Accepted requirements contradict one another'
                 elif not accepted:status='MISSING INFORMATION';reason='Missing accepted '+r['field']
                 elif len(accepted)!=len(fs):status='REQUIRES ENGINEERING REVIEW';reason='Unreviewed evidence for '+r['field']
                 else:

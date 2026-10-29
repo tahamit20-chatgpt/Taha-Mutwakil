@@ -50,7 +50,7 @@ def classify(pid:str,body:EditClassification,user=Depends(identity),db=Depends(d
     svc.validate_classification(db,user['tenant'],body.classification,body.equipment)
     if set(p.data['tags'])!={e.tag for e in body.equipment}:raise HTTPException(422,'Keep existing equipment tags; adding/removing tags requires a separate controlled revision')
     add(db,'classification_review',user['tenant'],pid,original=p.data.get('classification'),actor=user['user'])
-    p.data={**p.data,'classification':body.classification.model_dump(mode='json'),'workflow_version':'2.0','equipment':[e.model_dump() for e in body.equipment],'updated_at':now()};p.lock_version+=1;audit(db,user,pid,'CLASSIFICATION_CHANGED',pid);db.commit();return serialize(p)
+    p.data={**p.data,'name':body.name,'classification':body.classification.model_dump(mode='json'),'workflow_version':'2.0','equipment':[e.model_dump() for e in body.equipment],'updated_at':now()};p.lock_version+=1;audit(db,user,pid,'CLASSIFICATION_CHANGED',pid);db.commit();return serialize(p)
 @router.get('/projects/{pid}/summary')
 def get_summary(pid:str,user=Depends(identity),db=Depends(db_session)):
     s=svc.summary(db,project(db,pid,user));db.commit();return s
@@ -126,7 +126,7 @@ def metadata(rid:str,body:DocumentMetadata,user=Depends(identity),db=Depends(db_
     m=svc.master(db,user['tenant']).data
     if body.category not in m['document_categories']:raise HTTPException(422,'Choose a configured document category')
     add(db,'document_review',user['tenant'],p.id,document_id=rid,original=serialize(doc),reason=body.reason,actor=user['user'])
-    doc.data={**doc.data,**body.model_dump(exclude={'expected_version','reason'}),'metadata_confirmed_by':user['user']};doc.lock_version+=1;p.lock_version+=1;audit(db,user,p.id,'DOCUMENT_METADATA_CHANGED',rid);db.commit();result=serialize(doc);result.pop('object_key',None);return result
+    doc.data={**doc.data,**body.model_dump(exclude={'expected_version','reason'}),'metadata_confirmed_by':user['user'],'category_status':'CONFIRMED'};doc.lock_version+=1;p.lock_version+=1;audit(db,user,p.id,'DOCUMENT_METADATA_CHANGED',rid);db.commit();result=serialize(doc);result.pop('object_key',None);return result
 
 @router.get('/library/product-families')
 def families(user=Depends(identity),db=Depends(db_session)):return [serialize(r) for r in svc.rows(db,user['tenant'],'product_family')]
@@ -137,6 +137,9 @@ def family(body:FamilyInput,user=Depends(identity),db=Depends(db_session)):
 def studios(pid:str,user=Depends(identity),db=Depends(db_session)):
     p=project(db,pid,user);svc.ensure_registry(db,user['tenant']);s=svc.summary(db,p)
     result=dict(inputs=s['equipment'],candidates=[serialize(r) for r in svc.rows(db,user['tenant'],'selection_candidate',pid)],prices=[serialize(r) for r in svc.rows(db,user['tenant'],'price_reference',pid)],quotations=[serialize(r) for r in svc.rows(db,user['tenant'],'quotation',pid)],templates=[serialize(r) for r in svc.rows(db,user['tenant'],'quote_template')],selection_status='PENDING ENGINEERING DATA — no approved curves/compatibility data',icap_status='REQUIRES CONFIGURATION — no approved cost integration or automatic pricing',easyselect_status='NOT AVAILABLE YET — authorized reference adapter only')
+    for candidate in result['candidates']:
+        candidate['reference_reviews']=[serialize(r) for r in svc.rows(db,user['tenant'],'selection_review',pid) if r.data['candidate_id']==candidate['id']]
+        candidate['inputs_stale']=candidate['input_hash']!=s['summary_hash']
     db.commit();return result
 @router.post('/projects/{pid}/selection/candidates',status_code=201)
 def candidate(pid:str,body:CandidateInput,user=Depends(identity),db=Depends(db_session)):
@@ -172,10 +175,10 @@ def quote_export(rid:str,user=Depends(identity),db=Depends(db_session)):
     return Response(body,media_type='text/html',headers={'Content-Disposition':f'attachment; filename="bidfit-draft-{rid}.html"'})
 
 @router.get('/branding/status')
-def branding_status():return {'configured':(ROOT/'.runtime/branding-logo.png').exists() or (ROOT/'frontend/public/branding/ksb-logo.png').exists(),'message':'Upload the original logo PNG unchanged in Settings; inline chat images are not byte assets in this workspace'}
+def branding_status():return {'configured':(ROOT/'.runtime/branding-logo.png').exists() or (ROOT/'frontend/public/branding/ksb-logo.png').exists() or (ROOT/'frontend/dist/branding/ksb-logo.png').exists(),'message':'Upload the original logo PNG unchanged in Settings; inline chat images are not byte assets in this workspace'}
 @router.get('/branding/logo')
 def logo():
-    for path in [ROOT/'.runtime/branding-logo.png',ROOT/'frontend/public/branding/ksb-logo.png']:
+    for path in [ROOT/'.runtime/branding-logo.png',ROOT/'frontend/public/branding/ksb-logo.png',ROOT/'frontend/dist/branding/ksb-logo.png']:
         if path.exists():return FileResponse(path,media_type='image/png')
     raise HTTPException(404,'Original logo file not configured')
 @router.post('/branding/logo')

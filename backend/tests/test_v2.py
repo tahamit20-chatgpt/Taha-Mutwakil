@@ -36,7 +36,7 @@ def custom_rule(c,**extra):
 def test_classification_config_six_areas_and_mixed_validation(client):
     m=client.get('/api/v1/configuration').json()
     assert list(m['markets'])==['Water','Energy','Mining','General Industry','Building Services','Petrochemicals / Chemicals']
-    p=create(client);d=load(client,p);assert d['classification']['application']=='Water Supply' and d['workflow_version']=='2.0'
+    p=create(client);d=load(client,p);assert d['classification']['application']=='Water Supply' and d['workflow_version']=='2.0' and d['name'].endswith(' revised')
     assert client.post('/api/v1/rfqs',json=dict(name='Invalid',classification=dict(product_category='Valve',market_area='Water',application='Fire Protection',customer='Synthetic'),equipment=[dict(tag='V1',product_category='Valve')])).status_code==422
     assert client.post('/api/v1/rfqs',json=dict(name='Wrong category',classification=dict(product_category='Valve',market_area='Water',application='Water Supply',customer='Synthetic'),equipment=[dict(tag='P1',product_category='Pump / Pump Set')])).status_code==422
     login(client,'bob');assert client.put('/api/v1/configuration',json=dict(expected_version=m['lock_version'],customers=m['customers'],markets=m['markets'])).status_code==403
@@ -45,7 +45,7 @@ def test_summary_review_is_required_and_new_upload_invalidates_it(client):
     p=create(client);ready(client,p)
     r=client.post(f'/api/v1/projects/{p}/evaluations',json={'expected_version':load(client,p)['lock_version']});assert r.status_code==409
     acknowledge(client,p);r=process(client,p);assert r['snapshot']['outcome']=='GO'
-    before=client.get('/api/v1/evaluations/'+r['id']+'/exports?format=json').content
+    before={fmt:client.get('/api/v1/evaluations/'+r['id']+'/exports?format='+fmt).content for fmt in ('json','html','csv')}
     original=load(client,p)['document'][0]
     revision=client.post(f'/api/v1/projects/{p}/documents',files={'file':('revision.txt',b'Tag: P-101\nhead: 60 m')},data={'revision_of':original['id']},headers={'Idempotency-Key':'revision-2'})
     assert revision.status_code==202;run_once();accept(client,p)
@@ -53,7 +53,7 @@ def test_summary_review_is_required_and_new_upload_invalidates_it(client):
     assert not client.get(f'/api/v1/projects/{p}/summary').json()['reviewed']
     acknowledge(client,p);new=process(client,p);assert new['snapshot']['outcome']=='INSUFFICIENT DATA'
     assert any(f['compliance_status']=='CONFLICTING INFORMATION' for f in new['snapshot']['compliance_matrix'])
-    assert client.get('/api/v1/evaluations/'+r['id']+'/exports?format=json').content==before
+    for fmt,value in before.items():assert client.get('/api/v1/evaluations/'+r['id']+'/exports?format='+fmt).content==value
 
 def test_missing_npsha_and_unavailable_standard_never_pass(client):
     p=create(client);ready(client,p,(ROOT/'fixtures/synthetic/go.txt').read_text()+'standard: API 610 edition 12\n')
@@ -140,9 +140,9 @@ def test_office_exact_sources(client):
 def test_legacy_rfq_can_be_adopted_without_losing_original_facts(client):
     p=project(client);upload(client,p);run_once();accept(client,p);old=evaluate(client,p)
     d=load(client,p)
-    body=dict(name=d['name'],classification=dict(product_category='Pump / Pump Set',market_area='Water',application='Water Supply',customer='Synthetic'),equipment=[dict(tag='P-101',product_category='Pump / Pump Set')],expected_version=d['lock_version'])
+    body=dict(name=d['name']+' revised',classification=dict(product_category='Pump / Pump Set',market_area='Water',application='Water Supply',customer='Synthetic'),equipment=[dict(tag='P-101',product_category='Pump / Pump Set')],expected_version=d['lock_version'])
     r=client.put(f'/api/v1/projects/{p}/classification',json=body);assert r.status_code==200,r.text
-    d=load(client,p);assert len(d['fact'])==10 and d['evaluation'][0]['id']==old['id'] and d['workflow_version']=='2.0'
+    d=load(client,p);assert len(d['fact'])==10 and d['evaluation'][0]['id']==old['id'] and d['workflow_version']=='2.0' and d['name'].endswith(' revised')
 
 def test_logo_file_preserved_exactly_and_permissions(client,tmp_path,monkeypatch):
     import app.workflow.routes as routes
@@ -152,3 +152,28 @@ def test_logo_file_preserved_exactly_and_permissions(client,tmp_path,monkeypatch
     assert client.post('/api/v1/branding/logo',files={'file':('original.png',data)}).status_code==200
     assert client.get('/api/v1/branding/logo').content==data
     login(client,'bob');assert client.post('/api/v1/branding/logo',files={'file':('original.png',data)}).status_code==403
+
+def test_rule_semantics_and_pressure_basis(client):
+    from app.workflow.models import RuleInput
+    from app.extraction.service import normalize
+    from pydantic import ValidationError
+    assert normalize('part_number','  ','')[0] is None
+    payload=dict(criterion_id='PRESSURE1',name='Synthetic pressure boundary',field='pressure',product_category='Pump / Pump Set',operator='range',maximum=200000,units='Pa',source_reference='Synthetic gauge pressure policy',effective_date='2020-01-01')
+    with pytest.raises(ValidationError):RuleInput.model_validate(payload)
+    payload['pressure_basis']='gauge'
+    p=create(client);ready(client,p,(ROOT/'fixtures/synthetic/go.txt').read_text()+'npsha: 6 m\npressure: 1 bar\n')
+    r=client.post('/api/v1/registry/rules',json=payload);assert r.status_code==201
+    assert client.post('/api/v1/registry/rules/'+r.json()['id']+'/approve',json={'reason':'Synthetic test basis validation'}).status_code==200
+    acknowledge(client,p);r=process(client,p)['snapshot'];assert r['outcome']=='INSUFFICIENT DATA'
+    assert any(f['criterion_id']=='PRESSURE1' and f['compliance_status']=='MISSING INFORMATION' for f in r['compliance_matrix'])
+
+def test_register_quantity_conflict_and_price_gates(client):
+    p=create(client,equipment=[dict(tag='P-101',product_category='Pump / Pump Set',quantity=1)])
+    ready(client,p,(ROOT/'fixtures/synthetic/v2-pump.txt').read_text());s=acknowledge(client,p)
+    assert any(c['field']=='quantity' for c in s['conflicts'])
+    assert process(client,p)['snapshot']['outcome']=='INSUFFICIENT DATA'
+    payload=dict(expected_version=load(client,p)['lock_version'],tag='P-101',price_kind='Approved Selling Price',amount=100,currency='SAR',valid_until='2030-01-01',source_reference='Synthetic price reference',source_revision='A')
+    assert client.post(f'/api/v1/projects/{p}/pricing/references',json=payload).status_code==422
+    payload['price_kind']='Target Selling Price'
+    r=client.post(f'/api/v1/projects/{p}/pricing/references',json=payload)
+    assert r.status_code==201 and r.json()['approval_status']=='DRAFT_UNAPPROVED'

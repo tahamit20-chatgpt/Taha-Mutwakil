@@ -15,6 +15,7 @@ Generated from installed package metadata and package locks. Review notices befo
 | Python: chardet | 7.7.0 | 0BSD |
 | Python: click | 8.5.0 | BSD-3-Clause |
 | Python: cryptography | 50.0.2 | Apache-2.0 OR BSD-3-Clause |
+| Python: defusedxml | 0.7.1 | PSFL |
 | Python: fastapi | 0.115.12 | MIT License |
 | Python: greenlet | 3.5.6 | MIT AND PSF-2.0 |
 | Python: h11 | 0.16.0 | MIT |

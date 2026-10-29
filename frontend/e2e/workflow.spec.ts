@@ -4,6 +4,8 @@ for(const [scenario,outcome] of [['go','GO'],['missing','INSUFFICIENT DATA']]){
  test(`synthetic ${scenario}: upload → review → evaluate → export`,async({page})=>{
   await page.goto('/');
   await page.getByRole('button',{name:'Enter local demo as Alice (engineer)',exact:true}).click();
+  await page.getByRole('button',{name:'New RFQ',exact:true}).click();
+  await page.getByRole('button',{name:'Original quick demo',exact:true}).click();
   await page.getByLabel('Project reference').fill('Browser '+scenario+' '+Date.now());
   await page.getByRole('button',{name:'Create project',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Document manifest'})).toBeVisible();
